@@ -1,6 +1,6 @@
 # AgriCo · Demand Planning Dashboard
 
-Interactive demand planning demo built with React, Vite, Tailwind CSS, Recharts, and react-simple-maps. Mock AgriCo forecast data with India accuracy heatmap, explainability views, and McKinsey-themed UI.
+Interactive demand planning demo built with React, Vite, Tailwind CSS, and Recharts. Mock AgriCo forecast data with explainability views and McKinsey-themed UI.
 
 ## Live demo
 
@@ -35,4 +35,4 @@ npm run preview
 
 - React 19 + TypeScript + Vite 8
 - Tailwind CSS v4
-- Recharts, Framer Motion, react-simple-maps
+- Recharts, Framer Motion

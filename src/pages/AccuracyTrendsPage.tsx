@@ -12,7 +12,6 @@ import {
 } from 'recharts'
 import { AccuracyTrendChart } from '../components/AccuracyTrendChart'
 import { ChartCard } from '../components/ChartCard'
-import { IndiaAccuracyMap } from '../components/IndiaAccuracyMap'
 import { ErrorComparisonChart, ForecastBucketChart } from '../components/ForecastBucketChart'
 import { HorizonChart } from '../components/ModelMixChart'
 import { PageHeader, PageShell } from '../components/shared'
@@ -40,14 +39,6 @@ export function AccuracyTrendsPage() {
         title="Accuracy Trends"
         subtitle={`Model vs ${LABELS.salesTeam.toLowerCase()} performance over Jul'24 – Feb'26 backtest period`}
       />
-
-      <ChartCard
-        title="Geographic Accuracy Heatmap"
-        subtitle="Pan-India view with state-level metrics · drill to territory pointers"
-        glow
-      >
-        <IndiaAccuracyMap />
-      </ChartCard>
 
       <section className="grid gap-6 xl:grid-cols-3">
         <ChartCard

@@ -2,7 +2,6 @@ import { useMemo, useState } from 'react'
 import { Filter, Search } from 'lucide-react'
 import { AccuracyTrendChart } from '../components/AccuracyTrendChart'
 import { ChartCard } from '../components/ChartCard'
-import { IndiaAccuracyMap } from '../components/IndiaAccuracyMap'
 import { HorizonChart } from '../components/ModelMixChart'
 import { KpiCard } from '../components/KpiCard'
 import { PerformanceTable } from '../components/PerformanceTable'
@@ -101,14 +100,6 @@ export function OverviewPage() {
           />
         </div>
       </section>
-
-      <ChartCard
-        title="India Accuracy Heatmap"
-        subtitle="Click a state to drill down · territory markers show model vs sales team performance"
-        glow
-      >
-        <IndiaAccuracyMap />
-      </ChartCard>
 
       <section className="grid gap-6 xl:grid-cols-3">
         <ChartCard
