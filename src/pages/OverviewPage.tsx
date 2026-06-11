@@ -74,11 +74,11 @@ export function OverviewPage() {
           onExplore={() => scrollToChapter('chapter-territory')}
           compact
         >
-          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-            <MetricRing label="Accuracy" value={data.summary.modelAccuracy} accent="sky" sublabel={`Target ${formatPercent(data.summary.accuracyTarget)}`} onClick={() => goTo('metrics')} delay={0.15} compact />
-            <MetricRing label="wMAPE" value={Math.round((1 - data.summary.wmape) * 100)} accent="blue" sublabel={`Raw ${data.summary.wmape.toFixed(2)}`} onClick={() => goTo('metrics')} delay={0.2} compact />
-            <MetricRing label="Coverage" value={data.summary.highAccuracyCoverage} accent="success" sublabel=">60% bucket" onClick={() => goTo('metrics')} delay={0.25} compact />
-            <MetricRing label="Bias" value={data.summary.overForecastRate} accent="coral" sublabel={`Under ${data.summary.underForecastRate}%`} onClick={() => goTo('metrics')} delay={0.3} compact />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+            <MetricRing label="Accuracy" value={data.summary.modelAccuracy} accent="sky" sublabel={`Target ${formatPercent(data.summary.accuracyTarget)}`} onClick={() => goTo('metrics')} delay={0.15} size="hero" />
+            <MetricRing label="wMAPE" value={Math.round((1 - data.summary.wmape) * 100)} accent="blue" sublabel={`Raw ${data.summary.wmape.toFixed(2)}`} onClick={() => goTo('metrics')} delay={0.2} size="hero" />
+            <MetricRing label="Coverage" value={data.summary.highAccuracyCoverage} accent="success" sublabel=">60% bucket" onClick={() => goTo('metrics')} delay={0.25} size="hero" />
+            <MetricRing label="Bias" value={data.summary.overForecastRate} accent="coral" sublabel={`Under ${data.summary.underForecastRate}%`} onClick={() => goTo('metrics')} delay={0.3} size="hero" />
           </div>
         </EditorialHero>
       </div>

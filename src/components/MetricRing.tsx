@@ -11,6 +11,7 @@ interface MetricRingProps {
   onClick?: () => void
   delay?: number
   compact?: boolean
+  size?: 'default' | 'compact' | 'hero'
 }
 
 const accentColors = {
@@ -31,14 +32,18 @@ export function MetricRing({
   onClick,
   delay = 0,
   compact,
+  size: sizeProp,
 }: MetricRingProps) {
+  const size = sizeProp ?? (compact ? 'compact' : 'default')
   const colors = accentColors[accent]
   const pct = Math.min(value / max, 1)
-  const radius = compact ? 34 : 42
+  const radius = size === 'hero' ? 46 : size === 'compact' ? 34 : 42
   const circumference = 2 * Math.PI * radius
   const dash = circumference * pct
-  const ringSize = compact ? 'h-[72px] w-[72px]' : 'h-28 w-28'
-  const valueSize = compact ? 'text-lg' : 'text-2xl'
+  const ringSize =
+    size === 'hero' ? 'h-[7.5rem] w-[7.5rem] sm:h-32 sm:w-32' : size === 'compact' ? 'h-[72px] w-[72px]' : 'h-28 w-28'
+  const valueSize = size === 'hero' ? 'text-3xl sm:text-4xl' : size === 'compact' ? 'text-lg' : 'text-2xl'
+  const strokeWidth = size === 'hero' ? 7 : size === 'compact' ? 5 : 6
 
   return (
     <motion.button
@@ -50,7 +55,7 @@ export function MetricRing({
       disabled={!onClick}
       className={cn(
         'group relative flex flex-col items-center rounded-xl text-center transition-all duration-300',
-        compact ? 'p-2.5' : 'rounded-2xl p-4',
+        size === 'hero' ? 'rounded-2xl p-4 sm:p-5' : size === 'compact' ? 'p-2.5' : 'rounded-2xl p-4',
         onClick && 'cursor-pointer hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)]',
         !onClick && 'cursor-default',
       )}
@@ -58,14 +63,14 @@ export function MetricRing({
     >
       <div className={cn('relative', ringSize)}>
         <svg viewBox="0 0 100 100" className="h-full w-full -rotate-90">
-          <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={compact ? 5 : 6} />
+          <circle cx="50" cy="50" r={radius} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth={strokeWidth} />
           <motion.circle
             cx="50"
             cy="50"
             r={radius}
             fill="none"
             stroke={colors.stroke}
-            strokeWidth={compact ? 5 : 6}
+            strokeWidth={strokeWidth}
             strokeLinecap="round"
             strokeDasharray={`${dash} ${circumference}`}
             initial={{ strokeDasharray: `0 ${circumference}` }}
@@ -80,8 +85,17 @@ export function MetricRing({
           </span>
         </div>
       </div>
-      <p className={cn('font-display font-bold uppercase tracking-wider text-white/70', compact ? 'mt-1.5 text-[9px]' : 'mt-2 text-xs')}>{label}</p>
-      {sublabel && <p className="mt-0.5 text-[9px] text-white/40">{sublabel}</p>}
+      <p
+        className={cn(
+          'font-display font-bold uppercase tracking-wider text-white/70',
+          size === 'hero' ? 'mt-3 text-xs sm:text-sm' : size === 'compact' ? 'mt-1.5 text-[9px]' : 'mt-2 text-xs',
+        )}
+      >
+        {label}
+      </p>
+      {sublabel && (
+        <p className={cn('mt-0.5 text-white/40', size === 'hero' ? 'text-[11px]' : 'text-[9px]')}>{sublabel}</p>
+      )}
     </motion.button>
   )
 }

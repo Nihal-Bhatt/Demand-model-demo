@@ -34,10 +34,6 @@ export function EcosystemNavigator({
 
   return (
     <div className="ecosystem-nav w-full">
-      <p className="mb-5 text-center font-display text-[10px] font-bold uppercase tracking-[0.22em] text-theme-muted">
-        Tap a pillar to navigate
-      </p>
-
       <div className="relative mx-auto h-[300px] w-full max-w-[300px]">
         <svg
           viewBox={`0 0 ${size} ${size}`}

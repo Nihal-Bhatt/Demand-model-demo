@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Bell, Calendar, Download, Menu, PanelLeftOpen, Zap } from 'lucide-react'
+import { SprayCursor } from './components/SprayCursor'
 import { ScrollProgress } from './components/storytelling/ScrollProgress'
 import { AmbientBackground } from './components/AmbientBackground'
 import { Sidebar } from './components/Sidebar'
@@ -51,6 +52,7 @@ function AppContent() {
           Skip to main content
         </a>
         <ScrollProgress />
+        <SprayCursor />
         <AmbientBackground />
 
         <Sidebar
