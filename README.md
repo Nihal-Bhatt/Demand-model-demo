@@ -6,7 +6,14 @@ Interactive demand planning demo built with React, Vite, Tailwind CSS, Recharts,
 
 **https://nihal-bhatt.github.io/Demand-model-demo/**
 
-(Deploys automatically from `main` via GitHub Actions.)
+Deploys automatically from `main` to the `gh-pages` branch via GitHub Actions.
+
+### One-time GitHub Pages setup
+
+1. Open [Settings → Pages](https://github.com/Nihal-Bhatt/Demand-model-demo/settings/pages)
+2. Under **Build and deployment → Source**, choose **Deploy from a branch**
+3. Set **Branch** to `gh-pages` and folder to **`/ (root)`**
+4. Save — the site goes live after the next workflow run completes
 
 ## Local development
 
