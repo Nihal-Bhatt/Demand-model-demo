@@ -48,10 +48,11 @@ export function DriversPage() {
   return (
     <PageShell className="gap-10">
       <EditorialHero
-        lines={['Why', 'the model', 'predicts']}
-        accentLine={1}
+        lines={['Forecast drivers', 'explained']}
+        accentLine={0}
         badge="Forecast Drivers"
         subtitle="Weather, crop calendar, field app signals, and SHAP explainability"
+        compact
       />
 
       <section className="grid gap-4 sm:grid-cols-4">

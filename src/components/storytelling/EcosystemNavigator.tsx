@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import { motion } from 'framer-motion'
 import type { LucideIcon } from 'lucide-react'
 import { cn } from '../../lib/utils'
@@ -25,91 +26,121 @@ export function EcosystemNavigator({
   activeId,
   onNavigate,
 }: EcosystemNavigatorProps) {
-  const radius = 118
-  const cx = 160
-  const cy = 160
+  const uid = useId().replace(/:/g, '')
+  const radius = 100
+  const cx = 150
+  const cy = 150
+  const size = 300
 
   return (
-    <div className="ecosystem-nav relative mx-auto aspect-square w-full max-w-[360px]">
-      <p className="mb-4 text-center font-display text-[10px] font-bold uppercase tracking-[0.28em] text-theme-muted">
+    <div className="ecosystem-nav w-full">
+      <p className="mb-5 text-center font-display text-[10px] font-bold uppercase tracking-[0.22em] text-theme-muted">
         Tap a pillar to navigate
       </p>
 
-      <svg viewBox="0 0 320 320" className="absolute inset-0 h-full w-full" aria-hidden>
-        <defs>
-          <radialGradient id="ecosystemCore" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="rgba(0,169,244,0.35)" />
-            <stop offset="100%" stopColor="rgba(5,28,44,0)" />
-          </radialGradient>
-        </defs>
+      <div className="relative mx-auto h-[300px] w-full max-w-[300px]">
+        <svg
+          viewBox={`0 0 ${size} ${size}`}
+          className="absolute inset-0 h-full w-full"
+          aria-hidden
+        >
+          <defs>
+            <radialGradient id={`ecosystemCore-${uid}`} cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="rgba(0,169,244,0.4)" />
+              <stop offset="100%" stopColor="rgba(5,28,44,0)" />
+            </radialGradient>
+          </defs>
 
-        {/* Orbit ring */}
-        <circle cx={cx} cy={cy} r={radius} fill="none" stroke="rgba(0,169,244,0.15)" strokeWidth="1" strokeDasharray="6 8" />
+          <circle
+            cx={cx}
+            cy={cy}
+            r={radius}
+            fill="none"
+            stroke="rgba(0,169,244,0.12)"
+            strokeWidth="1"
+            strokeDasharray="5 7"
+          />
 
-        {/* Connection lines */}
-        {nodes.map((node) => {
-          const rad = (node.angle * Math.PI) / 180
-          const x = cx + radius * Math.cos(rad)
-          const y = cy + radius * Math.sin(rad)
-          const active = activeId === node.id
-          return (
-            <motion.line
-              key={`line-${node.id}`}
-              x1={cx}
-              y1={cy}
-              x2={x}
-              y2={y}
-              stroke={active ? '#00a9f4' : 'rgba(255,255,255,0.12)'}
-              strokeWidth={active ? 2 : 1}
-              initial={{ pathLength: 0, opacity: 0 }}
-              animate={{ pathLength: 1, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.2 }}
-            />
-          )
-        })}
+          {nodes.map((node) => {
+            const rad = (node.angle * Math.PI) / 180
+            const x = cx + radius * Math.cos(rad)
+            const y = cy + radius * Math.sin(rad)
+            const active = activeId === node.id
+            const innerR = 38
+            const dx = x - cx
+            const dy = y - cy
+            const dist = Math.sqrt(dx * dx + dy * dy)
+            const stopX = cx + (dx / dist) * innerR
+            const stopY = cy + (dy / dist) * innerR
 
-        {/* Core */}
-        <circle cx={cx} cy={cy} r={52} fill="url(#ecosystemCore)" />
-        <circle cx={cx} cy={cy} r={52} fill="none" stroke="rgba(0,169,244,0.45)" strokeWidth="1.5" />
-        <text x={cx} y={cy - 6} textAnchor="middle" className="fill-white font-display text-[22px] font-bold" style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif' }}>
-          {centerValue}
-        </text>
-        <text x={cx} y={cy + 14} textAnchor="middle" className="fill-white/50 text-[9px] uppercase" style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', letterSpacing: '0.12em' }}>
-          {centerLabel}
-        </text>
-      </svg>
+            return (
+              <motion.line
+                key={`line-${node.id}`}
+                x1={stopX}
+                y1={stopY}
+                x2={x}
+                y2={y}
+                stroke={active ? '#00a9f4' : 'rgba(255,255,255,0.15)'}
+                strokeWidth={active ? 1.5 : 1}
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ duration: 0.5, delay: 0.15 }}
+              />
+            )
+          })}
 
-      {/* Clickable nodes overlaid */}
-      <div className="pointer-events-none absolute inset-0" role="navigation" aria-label="Forecast ecosystem navigation">
-        {nodes.map((node, i) => {
-          const rad = (node.angle * Math.PI) / 180
-          const xPct = ((cx + radius * Math.cos(rad)) / 320) * 100
-          const yPct = ((cy + radius * Math.sin(rad)) / 320) * 100
-          const Icon = node.icon
-          const active = activeId === node.id
+          <circle cx={cx} cy={cy} r={38} fill={`url(#ecosystemCore-${uid})`} />
+          <circle cx={cx} cy={cy} r={38} fill="none" stroke="rgba(0,169,244,0.5)" strokeWidth="1.5" />
+          <text
+            x={cx}
+            y={cy - 4}
+            textAnchor="middle"
+            fill="white"
+            style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', fontSize: 18, fontWeight: 700 }}
+          >
+            {centerValue}
+          </text>
+          <text
+            x={cx}
+            y={cy + 12}
+            textAnchor="middle"
+            fill="rgba(255,255,255,0.5)"
+            style={{ fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif', fontSize: 8, letterSpacing: '0.14em' }}
+          >
+            {centerLabel.toUpperCase()}
+          </text>
+        </svg>
 
-          return (
-            <motion.button
-              key={node.id}
-              type="button"
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 + i * 0.08, duration: 0.4 }}
-              onClick={() => onNavigate(node.id)}
-              className={cn(
-                'pointer-events-auto absolute flex -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center gap-1 rounded-2xl px-3 py-2.5 transition-all duration-300',
-                active
-                  ? 'bg-mck-sky/20 ring-2 ring-mck-sky/50 shadow-[0_0_24px_rgba(0,169,244,0.35)]'
-                  : 'bg-white/5 ring-1 ring-white/10 hover:bg-white/10 hover:ring-mck-sky/30 hover:shadow-[0_0_20px_rgba(0,169,244,0.2)]',
-              )}
-              style={{ left: `${xPct}%`, top: `${yPct}%` }}
-            >
-              <Icon className={cn('h-4 w-4', active ? 'text-mck-sky' : 'text-white/70')} />
-              <span className="font-display text-[10px] font-bold uppercase tracking-wider text-white">{node.label}</span>
-              <span className="hidden text-[9px] text-white/40 sm:block">{node.sublabel}</span>
-            </motion.button>
-          )
-        })}
+        <div className="absolute inset-0" role="navigation" aria-label="Forecast ecosystem navigation">
+          {nodes.map((node, i) => {
+            const rad = (node.angle * Math.PI) / 180
+            const xPct = ((cx + radius * Math.cos(rad)) / size) * 100
+            const yPct = ((cy + radius * Math.sin(rad)) / size) * 100
+            const Icon = node.icon
+            const active = activeId === node.id
+
+            return (
+              <motion.button
+                key={node.id}
+                type="button"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                transition={{ delay: 0.2 + i * 0.06, duration: 0.35 }}
+                onClick={() => onNavigate(node.id)}
+                className={cn(
+                  'absolute z-10 flex min-w-[72px] -translate-x-1/2 -translate-y-1/2 cursor-pointer flex-col items-center gap-0.5 rounded-xl px-2.5 py-2 backdrop-blur-md transition-all duration-300',
+                  active
+                    ? 'bg-mck-sky/25 ring-1 ring-mck-sky/60 shadow-[0_0_20px_rgba(0,169,244,0.35)]'
+                    : 'bg-[rgba(5,28,44,0.75)] ring-1 ring-white/12 hover:bg-white/10 hover:ring-mck-sky/35',
+                )}
+                style={{ left: `${xPct}%`, top: `${yPct}%` }}
+              >
+                <Icon className={cn('h-3.5 w-3.5', active ? 'text-mck-sky' : 'text-white/75')} />
+                <span className="font-display text-[9px] font-bold uppercase tracking-wide text-white">{node.label}</span>
+              </motion.button>
+            )
+          })}
+        </div>
       </div>
     </div>
   )

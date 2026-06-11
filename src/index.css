@@ -78,6 +78,11 @@
     background: var(--surface-base);
     font-family: var(--font-sans);
     @apply antialiased transition-colors duration-300;
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='6' fill='none' stroke='%2300a9f4' stroke-width='1.5' opacity='0.9'/%3E%3Ccircle cx='10' cy='10' r='1.5' fill='%2300a9f4'/%3E%3C/svg%3E") 10 10, auto;
+  }
+
+  a, button, [role='button'], .cursor-pointer, input[type='button'], input[type='submit'], select, label[for] {
+    cursor: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Ccircle cx='12' cy='12' r='8' fill='none' stroke='%23f59e0b' stroke-width='1.5'/%3E%3Ccircle cx='12' cy='12' r='2' fill='%23f59e0b'/%3E%3C/svg%3E") 12 12, pointer;
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {
@@ -396,10 +401,21 @@
   }
 
   .display-line {
-    font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-size: clamp(1.75rem, 3.5vw, 2.5rem);
     font-weight: 800;
-    line-height: 0.95;
-    letter-spacing: -0.04em;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+  }
+
+  .display-line-compact {
+    font-size: clamp(1.35rem, 2.8vw, 1.85rem);
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+  }
+
+  .story-section-header h2 {
+    font-size: clamp(1.125rem, 2vw, 1.5rem);
   }
 
   .chapter-label {
@@ -447,6 +463,34 @@
   @keyframes pulse-glow {
     0%, 100% { opacity: 0.4; transform: scale(1); }
     50% { opacity: 1; transform: scale(1.15); }
+  }
+
+  .cinematic-vignette::after {
+    content: '';
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.35) 100%);
+  }
+
+  .scanlines {
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255, 255, 255, 0.03) 2px,
+      rgba(255, 255, 255, 0.03) 4px
+    );
+  }
+
+  @keyframes float-gentle {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-6px); }
+  }
+
+  .animate-float-gentle {
+    animation: float-gentle 4s ease-in-out infinite;
   }
 }
 

@@ -13,10 +13,11 @@ export function PipelinePage() {
   return (
     <PageShell className="gap-10">
       <EditorialHero
-        lines={['Forecast', 'engine', 'status']}
-        accentLine={1}
-        badge="Thunderbird Pipeline"
+        lines={['Thunderbird', 'pipeline']}
+        accentLine={0}
+        badge="Pipeline Status"
         subtitle="Weekly batch · preprocessing through post-processing"
+        compact
       />
 
       <section className="grid gap-4 sm:grid-cols-4">

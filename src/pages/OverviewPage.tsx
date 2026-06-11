@@ -8,7 +8,7 @@ import {
   TrendingUp,
 } from 'lucide-react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts'
-import { CategoryIllustration, CropRowIcon, FarmerIcon, SprayIcon } from '../components/agri/AgriIllustrations'
+import { CategoryIllustration } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
 import { FindingCard } from '../components/FindingCard'
 import { IndiaTerritoryMap } from '../components/IndiaTerritoryMap'
@@ -63,59 +63,40 @@ export function OverviewPage() {
   const goTo = (section: string) => navigate(section as NavSection)
 
   return (
-    <PageShell className="gap-10 lg:gap-14">
-      <EditorialHero
-        lines={['The power', 'of demand', 'forecasting']}
-        accentLine={1}
-        badge="AgriCo · Forecast Command"
-        subtitle={`${formatPercent(data.summary.modelAccuracy)} model accuracy across ${data.summary.totalSkus.toLocaleString()} crop protection SKUs · ${data.period}`}
-        onExplore={() => scrollToChapter('chapter-metrics')}
-      >
-        <div className="relative flex w-full flex-col gap-6 lg:flex-row lg:items-end lg:gap-10">
-          <AgriFloatField />
-          <div className="pointer-events-none absolute -left-4 bottom-0 hidden opacity-25 lg:block">
-            <FarmerIcon size={100} />
+    <PageShell className="gap-8 lg:gap-10">
+      <div className="relative">
+        <AgriFloatField />
+        <EditorialHero
+          lines={['Demand forecasting', 'command center']}
+          accentLine={0}
+          badge="AgriCo · Forecast Command"
+          subtitle={`${formatPercent(data.summary.modelAccuracy)} model accuracy · ${data.summary.totalSkus.toLocaleString()} crop protection SKUs · ${data.period}`}
+          onExplore={() => scrollToChapter('chapter-territory')}
+          compact
+        >
+          <div className="grid grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
+            <MetricRing label="Accuracy" value={data.summary.modelAccuracy} accent="sky" sublabel={`Target ${formatPercent(data.summary.accuracyTarget)}`} onClick={() => goTo('metrics')} delay={0.15} compact />
+            <MetricRing label="wMAPE" value={Math.round((1 - data.summary.wmape) * 100)} accent="blue" sublabel={`Raw ${data.summary.wmape.toFixed(2)}`} onClick={() => goTo('metrics')} delay={0.2} compact />
+            <MetricRing label="Coverage" value={data.summary.highAccuracyCoverage} accent="success" sublabel=">60% bucket" onClick={() => goTo('metrics')} delay={0.25} compact />
+            <MetricRing label="Bias" value={data.summary.overForecastRate} accent="coral" sublabel={`Under ${data.summary.underForecastRate}%`} onClick={() => goTo('metrics')} delay={0.3} compact />
           </div>
-          <div className="pointer-events-none absolute right-0 top-0 hidden opacity-20 lg:block">
-            <SprayIcon size={72} />
-          </div>
-          <div className="pointer-events-none absolute bottom-0 right-1/4 hidden opacity-15 lg:block">
-            <CropRowIcon size={120} />
-          </div>
+        </EditorialHero>
+      </div>
 
-          <div className="grid flex-1 grid-cols-2 gap-3 sm:grid-cols-4">
-            <MetricRing label="Accuracy" value={data.summary.modelAccuracy} accent="sky" sublabel={`Target ${formatPercent(data.summary.accuracyTarget)}`} onClick={() => goTo('metrics')} delay={0.2} />
-            <MetricRing label="wMAPE" value={Math.round((1 - data.summary.wmape) * 100)} accent="blue" sublabel={`Raw ${data.summary.wmape.toFixed(2)}`} onClick={() => goTo('metrics')} delay={0.25} />
-            <MetricRing label="Coverage" value={data.summary.highAccuracyCoverage} accent="success" sublabel=">60% bucket" onClick={() => goTo('metrics')} delay={0.3} />
-            <MetricRing label="Bias" value={data.summary.overForecastRate} accent="coral" sublabel={`Under ${data.summary.underForecastRate}%`} onClick={() => goTo('metrics')} delay={0.35} />
-          </div>
-
-          <div className="hidden shrink-0 lg:block">
-            <EcosystemNavigator
-              centerValue={formatPercent(data.summary.modelAccuracy)}
-              centerLabel="Portfolio"
-              nodes={ecosystemNodes}
-              onNavigate={goTo}
-            />
-          </div>
-        </div>
-      </EditorialHero>
-
-      {/* Mobile ecosystem */}
-      <div className="lg:hidden">
+      <section className="elevated-card p-5 lg:p-6">
         <EcosystemNavigator
           centerValue={formatPercent(data.summary.modelAccuracy)}
           centerLabel="Portfolio"
           nodes={ecosystemNodes}
           onNavigate={goTo}
         />
-      </div>
+      </section>
 
       <StorySection
         id="chapter-territory"
         chapter="01 · Territory"
         title="India demand intelligence"
-        subtitle="Inspired by immersive geographic storytelling — click regions to drill into territories and SKUs"
+        subtitle="Click regions to drill into territories and SKUs"
       >
         <div className="grid gap-4 lg:grid-cols-5">
           <ChartCard title="Regional heatmap" subtitle="Accuracy by agro-climatic zone" className="lg:col-span-3" glow>
@@ -135,10 +116,10 @@ export function OverviewPage() {
               <motion.button
                 key={t.name}
                 type="button"
-                initial={{ opacity: 0, x: 20 }}
+                initial={{ opacity: 0, x: 16 }}
                 whileInView={{ opacity: 1, x: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.08 }}
+                transition={{ delay: i * 0.06 }}
                 onClick={() => {
                   setSelectedTerritory(t.name)
                   goTo('sku')
@@ -160,10 +141,10 @@ export function OverviewPage() {
       </StorySection>
 
       <StorySection
-        id="chapter-metrics"
+        id="chapter-findings"
         chapter="02 · Findings"
         title="What the model tells us"
-        subtitle="Each insight links to its dedicated view — no repeated charts"
+        subtitle="Each insight links to its dedicated view"
       >
         <div className="grid gap-3 sm:grid-cols-2">
           <FindingCard
@@ -178,7 +159,7 @@ export function OverviewPage() {
           <FindingCard
             title="Horizon Performance"
             metric={horizonSummary}
-            detail="N+1 strongest · full bias analysis in Metrics"
+            detail="N+1 strongest · full analysis in Metrics"
             accent="blue"
             icon={<BarChart3 className="h-5 w-5 text-mck-blue" />}
             onClick={() => goTo('metrics')}
@@ -187,7 +168,7 @@ export function OverviewPage() {
           <FindingCard
             title="Top Forecast Drivers"
             metric={topDrivers[0]?.feature.replace(/_/g, ' ') ?? '—'}
-            detail={`${((topDrivers[0]?.shap ?? 0) * 100).toFixed(0)}% mean |SHAP| · explore in Drivers`}
+            detail={`${((topDrivers[0]?.shap ?? 0) * 100).toFixed(0)}% mean |SHAP|`}
             accent="success"
             icon={<BrainCircuit className="h-5 w-5 text-mck-success" />}
             onClick={() => goTo('drivers')}
@@ -196,7 +177,7 @@ export function OverviewPage() {
           <FindingCard
             title="Pipeline"
             metric={pipelineRunning?.name ?? 'Idle'}
-            detail={`${pipelineSteps.filter((s) => s.status === 'complete').length}/${pipelineSteps.length} steps · RUN-2847`}
+            detail={`${pipelineSteps.filter((s) => s.status === 'complete').length}/${pipelineSteps.length} steps complete`}
             accent="amber"
             icon={<Activity className="h-5 w-5 text-mck-amber" />}
             onClick={() => goTo('pipeline')}
@@ -237,15 +218,15 @@ export function OverviewPage() {
               <motion.button
                 key={sku.sku}
                 type="button"
-                initial={{ opacity: 0, y: 16 }}
+                initial={{ opacity: 0, y: 12 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.06 }}
+                transition={{ delay: i * 0.05 }}
                 onClick={() => navigate('sku', { skuId: sku.sku })}
-                className="flex cursor-pointer items-center gap-3 rounded-2xl p-4 text-left ring-1 ring-[color:var(--border-subtle)] transition-all duration-300 hover:-translate-y-1 hover:shadow-[var(--shadow-glow)] hover:ring-mck-sky/35"
+                className="flex cursor-pointer items-center gap-3 rounded-xl p-3 text-left ring-1 ring-[color:var(--border-subtle)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)] hover:ring-mck-sky/35"
                 style={{ background: 'var(--surface-elevated)' }}
               >
-                <CategoryIllustration category={sku.category} size={36} />
+                <CategoryIllustration category={sku.category} size={32} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-display text-sm font-bold text-theme-primary">{sku.product}</p>
                   <p className="text-[10px] text-theme-secondary">{sku.category} · {sku.sku}</p>

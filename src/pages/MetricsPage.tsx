@@ -40,10 +40,11 @@ export function MetricsPage() {
   return (
     <PageShell className="gap-10">
       <EditorialHero
-        lines={['Deep', 'metrics', 'analysis']}
-        accentLine={1}
+        lines={['Deep metrics', 'analysis']}
+        accentLine={0}
         badge="Metrics & Models"
         subtitle="Accuracy trends, forecast bias, horizons, and algorithm selection"
+        compact
       />
 
       <StorySection chapter="01 · Trends" title="Accuracy & bias" subtitle="Monthly backtest with optional bias overlay">

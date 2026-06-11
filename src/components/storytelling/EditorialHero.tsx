@@ -2,6 +2,7 @@ import { motion } from 'framer-motion'
 import { ChevronDown, Sparkles } from 'lucide-react'
 import type { ReactNode } from 'react'
 import { cn } from '../../lib/utils'
+import { AgriProductDecor } from '../agri/AgriIllustrations'
 
 interface EditorialHeroProps {
   lines: string[]
@@ -11,6 +12,7 @@ interface EditorialHeroProps {
   children?: ReactNode
   className?: string
   onExplore?: () => void
+  compact?: boolean
 }
 
 export function EditorialHero({
@@ -21,35 +23,50 @@ export function EditorialHero({
   children,
   className,
   onExplore,
+  compact,
 }: EditorialHeroProps) {
   return (
-    <section className={cn('editorial-hero relative min-h-[420px] overflow-hidden rounded-3xl', className)}>
+    <section
+      className={cn(
+        'editorial-hero cinematic-vignette relative overflow-hidden rounded-2xl',
+        compact ? 'min-h-0' : 'min-h-[280px]',
+        className,
+      )}
+    >
       <div className="editorial-hero-bg absolute inset-0" />
-      <div className="noise-overlay pointer-events-none absolute inset-0 opacity-[0.04]" />
-      <div className="jazzy-shimmer pointer-events-none absolute inset-0 opacity-60" />
+      <div className="noise-overlay pointer-events-none absolute inset-0 opacity-[0.05]" />
+      <div className="jazzy-shimmer pointer-events-none absolute inset-0 opacity-40" />
+      <div className="scanlines pointer-events-none absolute inset-0 opacity-[0.03]" />
 
-      <div className="relative flex min-h-[420px] flex-col justify-between px-6 py-10 sm:px-10 lg:px-14 lg:py-14">
-        <div>
+      <AgriProductDecor className="pointer-events-none absolute -right-2 top-1/2 hidden -translate-y-1/2 opacity-[0.35] lg:flex" />
+
+      <div
+        className={cn(
+          'relative flex flex-col justify-between',
+          compact ? 'px-5 py-6 sm:px-7' : 'min-h-[280px] px-6 py-8 sm:px-8 lg:px-10',
+        )}
+      >
+        <div className="max-w-3xl">
           {badge && (
             <motion.p
-              initial={{ opacity: 0, y: 12 }}
+              initial={{ opacity: 0, y: 8 }}
               animate={{ opacity: 1, y: 0 }}
-              className="mb-6 inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.28em] text-mck-sky/80"
+              className="mb-3 inline-flex items-center gap-2 font-display text-[10px] font-bold uppercase tracking-[0.22em] text-mck-sky/80"
             >
-              <Sparkles className="h-3.5 w-3.5" />
+              <Sparkles className="h-3 w-3" />
               {badge}
             </motion.p>
           )}
 
-          <h1 className="display-stack max-w-3xl">
+          <h1 className={cn(compact ? 'display-stack-compact' : 'display-stack')}>
             {lines.map((line, i) => (
               <motion.span
-                key={line}
-                initial={{ opacity: 0, y: 40 }}
+                key={`${line}-${i}`}
+                initial={{ opacity: 0, y: compact ? 12 : 20 }}
                 animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.15 + i * 0.12, ease: [0.22, 1, 0.36, 1] }}
+                transition={{ duration: 0.5, delay: 0.1 + i * 0.08, ease: [0.22, 1, 0.36, 1] }}
                 className={cn(
-                  'display-line block',
+                  compact ? 'display-line-compact block' : 'display-line block',
                   i === accentLine && 'text-gradient-mck',
                   i !== accentLine && 'text-white',
                 )}
@@ -63,33 +80,31 @@ export function EditorialHero({
             <motion.p
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 0.6 }}
-              className="mt-6 max-w-xl font-body text-sm leading-relaxed text-white/55 lg:text-base"
+              transition={{ delay: 0.35 }}
+              className="mt-3 max-w-xl font-body text-xs leading-relaxed text-white/55 sm:text-sm"
             >
               {subtitle}
             </motion.p>
           )}
         </div>
 
-        <div className="mt-8 flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
-          {children}
+        {children && <div className="mt-6">{children}</div>}
 
-          {onExplore && (
-            <motion.button
-              type="button"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              onClick={onExplore}
-              className="group inline-flex cursor-pointer items-center gap-3 self-start font-display text-xs font-bold uppercase tracking-[0.2em] text-white/50 transition-colors hover:text-mck-sky"
-            >
-              <span className="relative flex h-10 w-10 items-center justify-center rounded-full ring-1 ring-white/20 transition-all group-hover:ring-mck-sky/50 group-hover:shadow-[0_0_20px_rgba(0,169,244,0.3)]">
-                <ChevronDown className="h-4 w-4 animate-bounce" />
-              </span>
-              Scroll to explore
-            </motion.button>
-          )}
-        </div>
+        {onExplore && !compact && (
+          <motion.button
+            type="button"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.5 }}
+            onClick={onExplore}
+            className="group mt-6 inline-flex cursor-pointer items-center gap-2 self-start font-display text-[10px] font-bold uppercase tracking-[0.18em] text-white/45 transition-colors hover:text-mck-sky"
+          >
+            <span className="flex h-8 w-8 items-center justify-center rounded-full ring-1 ring-white/15 transition-all group-hover:ring-mck-sky/40 group-hover:shadow-[0_0_16px_rgba(0,169,244,0.25)]">
+              <ChevronDown className="h-3.5 w-3.5 animate-bounce" />
+            </span>
+            Scroll to explore
+          </motion.button>
+        )}
       </div>
     </section>
   )

@@ -51,10 +51,11 @@ export function SkuExplorerPage() {
   return (
     <PageShell className="gap-10">
       <EditorialHero
-        lines={['Product', 'deep', 'dive']}
-        accentLine={1}
+        lines={['SKU explorer', 'deep dive']}
+        accentLine={0}
         badge="SKU Explorer"
-        subtitle="Product-level accuracy, territories, drivers, and forecast review queue"
+        subtitle={`${sku.product} · ${sku.sku} · ${sku.category}`}
+        compact
       />
 
       <div className="elevated-card flex flex-wrap items-center gap-4 p-4 lg:p-5">
