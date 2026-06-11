@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
 import { Bell, Calendar, Download, Menu, PanelLeftOpen, Zap } from 'lucide-react'
+import { ScrollProgress } from './components/storytelling/ScrollProgress'
 import { AmbientBackground } from './components/AmbientBackground'
 import { Sidebar } from './components/Sidebar'
 import { ThemeToggle } from './components/ThemeToggle'
@@ -49,6 +50,7 @@ function AppContent() {
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
+        <ScrollProgress />
         <AmbientBackground />
 
         <Sidebar

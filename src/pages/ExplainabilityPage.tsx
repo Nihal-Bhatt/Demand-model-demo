@@ -11,9 +11,9 @@ import {
   YAxis,
 } from 'recharts'
 import { CloudRain, Database, Layers, Sparkles, TrendingUp, Zap } from 'lucide-react'
-import { AgriPageHero } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
-import { PageHeader, PageShell } from '../components/shared'
+import { EditorialHero } from '../components/storytelling/EditorialHero'
+import { PageShell } from '../components/shared'
 import { useDashboard } from '../context/DashboardContext'
 import {
   engineeredFeatures,
@@ -46,15 +46,12 @@ export function DriversPage() {
   }))
 
   return (
-    <PageShell>
-      <PageHeader
-        title="Forecast Drivers"
-        subtitle="External indicators, feature engineering, and SHAP explainability — not shown elsewhere"
-      />
-
-      <AgriPageHero
-        title="Why the model predicts demand"
-        subtitle="Weather, crop calendar, field app signals, and engineered features drive forecasts"
+    <PageShell className="gap-10">
+      <EditorialHero
+        lines={['Why', 'the model', 'predicts']}
+        accentLine={1}
+        badge="Forecast Drivers"
+        subtitle="Weather, crop calendar, field app signals, and SHAP explainability"
       />
 
       <section className="grid gap-4 sm:grid-cols-4">

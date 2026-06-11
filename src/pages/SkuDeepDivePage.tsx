@@ -11,9 +11,10 @@ import {
   XAxis,
   YAxis,
 } from 'recharts'
-import { AgriPageHero, CategoryIllustration } from '../components/agri/AgriIllustrations'
+import { CategoryIllustration } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
-import { PageHeader, PageShell } from '../components/shared'
+import { EditorialHero } from '../components/storytelling/EditorialHero'
+import { PageShell } from '../components/shared'
 import { useDashboard } from '../context/DashboardContext'
 import { agriCoData, getSkuDeepDive, reviewQueue } from '../data/mockData'
 import { useChartTheme } from '../hooks/useChartTheme'
@@ -48,17 +49,21 @@ export function SkuExplorerPage() {
   }
 
   return (
-    <PageShell>
-      <PageHeader
-        title="SKU Explorer"
+    <PageShell className="gap-10">
+      <EditorialHero
+        lines={['Product', 'deep', 'dive']}
+        accentLine={1}
+        badge="SKU Explorer"
         subtitle="Product-level accuracy, territories, drivers, and forecast review queue"
       />
 
-      <AgriPageHero
-        category={sku.category}
-        title={sku.product}
-        subtitle={`${sku.sku} · ${sku.category} · ${sku.segment} · Best model: ${sku.bestModel}`}
-      />
+      <div className="elevated-card flex flex-wrap items-center gap-4 p-4 lg:p-5">
+        <CategoryIllustration category={sku.category} size={48} />
+        <div>
+          <p className="font-display text-xl font-bold text-theme-primary">{sku.product}</p>
+          <p className="mt-1 text-sm text-theme-secondary">{sku.sku} · {sku.category} · {sku.segment} · {sku.bestModel}</p>
+        </div>
+      </div>
 
       <div className="flex flex-wrap gap-2">
         {agriCoData.skus.map((s) => (

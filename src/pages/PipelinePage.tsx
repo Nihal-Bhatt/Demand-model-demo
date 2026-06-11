@@ -1,7 +1,8 @@
-import { AgriPageHero, CropRowIcon, FarmerIcon } from '../components/agri/AgriIllustrations'
+import { CropRowIcon } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
+import { EditorialHero } from '../components/storytelling/EditorialHero'
 import { PipelineStatus } from '../components/PipelineStatus'
-import { PageHeader, PageShell } from '../components/shared'
+import { PageShell } from '../components/shared'
 import { useDashboard } from '../context/DashboardContext'
 import { pipelineRuns, pipelineSteps } from '../data/mockData'
 import { cn } from '../lib/utils'
@@ -10,21 +11,13 @@ export function PipelinePage() {
   const { navigate } = useDashboard()
 
   return (
-    <PageShell>
-      <PageHeader
-        title="Pipeline Status"
-        subtitle="Thunderbird forecast engine · operational detail not shown on overview"
+    <PageShell className="gap-10">
+      <EditorialHero
+        lines={['Forecast', 'engine', 'status']}
+        accentLine={1}
+        badge="Thunderbird Pipeline"
+        subtitle="Weekly batch · preprocessing through post-processing"
       />
-
-      <div className="relative">
-        <AgriPageHero
-          title="Thunderbird forecast pipeline"
-          subtitle="Weekly batch · preprocessing through post-processing"
-        />
-        <div className="pointer-events-none absolute bottom-4 right-8 hidden opacity-25 lg:block">
-          <FarmerIcon size={56} />
-        </div>
-      </div>
 
       <section className="grid gap-4 sm:grid-cols-4">
         {[

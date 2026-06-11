@@ -79,14 +79,14 @@ export function PageHeader({ title, subtitle }: { title: string; subtitle?: stri
   )
 }
 
-export function PageShell({ children }: { children: ReactNode }) {
+export function PageShell({ children, className }: { children: ReactNode; className?: string }) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35 }}
-      className="space-y-5"
+      className={cn('space-y-5', className)}
     >
       {children}
     </motion.div>
