@@ -11,8 +11,11 @@ import {
   YAxis,
 } from 'recharts'
 import { CloudRain, Database, Layers, Sparkles, TrendingUp, Zap } from 'lucide-react'
+import { AgriPageHero } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
-import { PageHeader, PageShell } from '../components/shared'
+import { MetricFlowBar } from '../components/MetricFlowBar'
+import { PageShell } from '../components/shared'
+import { useDashboard } from '../context/DashboardContext'
 import {
   engineeredFeatures,
   explainabilitySkus,
@@ -32,6 +35,7 @@ const impactColors = {
 
 export function ExplainabilityPage() {
   const theme = useChartTheme()
+  const { navigate } = useDashboard()
   const [selectedSku, setSelectedSku] = useState(explainabilitySkus[0])
   const example = shapLocalExample
 
@@ -41,14 +45,17 @@ export function ExplainabilityPage() {
     value: c.value,
   }))
 
+  const skuId = selectedSku.split(' — ')[0]
+
   return (
     <PageShell>
-      <PageHeader
-        title="Forecast Explainability"
-        subtitle="Feature engineering, external indicators, and SHAP-based model interpretation per SKU × Territory"
+      <MetricFlowBar compact />
+
+      <AgriPageHero
+        title="Forecast drivers & explainability"
+        subtitle="Step 6 of metric flow · weather, crop calendar, field app signals — why the model predicts demand"
       />
 
-      {/* Summary strip */}
       <section className="grid gap-4 sm:grid-cols-4">
         {[
           { icon: Database, label: 'External drivers', value: '6', sub: '4 active · 2 planned' },
@@ -61,13 +68,12 @@ export function ExplainabilityPage() {
               <Icon className="h-4 w-4" />
               <span className="font-display text-xs font-bold uppercase tracking-wider text-theme-secondary">{label}</span>
             </div>
-            <p className="mt-2 font-mono text-2xl font-bold text-theme-primary">{value}</p>
+            <p className="mt-2 font-tabular text-2xl font-bold text-theme-primary">{value}</p>
             <p className="mt-1 text-sm text-theme-secondary">{sub}</p>
           </div>
         ))}
       </section>
 
-      {/* External drivers */}
       <ChartCard title="External Indicators & Data Sources" subtitle="Drivers fed into feature engineering pipeline">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {externalDrivers.map((driver) => (
@@ -75,6 +81,7 @@ export function ExplainabilityPage() {
               key={driver.id}
               className="group cursor-pointer rounded-xl p-4 ring-1 ring-[color:var(--border-subtle)] transition-all duration-200 hover:ring-mck-sky/40 hover:shadow-[var(--shadow-glow)]"
               style={{ background: 'var(--surface-muted)' }}
+              onClick={() => navigate('sku', { skuId: 'AC-1042', metricStep: 'explainability' })}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -95,14 +102,13 @@ export function ExplainabilityPage() {
                 <span className="stat-pill">{driver.features} features</span>
                 <span className={cn('stat-pill', driver.status === 'Active' && 'text-mck-success')}>{driver.status}</span>
               </div>
-              <p className="mt-2 font-mono text-[10px] text-theme-muted">Source: {driver.source}</p>
+              <p className="mt-2 font-tabular text-[10px] text-theme-muted">Source: {driver.source}</p>
             </div>
           ))}
         </div>
       </ChartCard>
 
       <section className="grid gap-6 lg:grid-cols-2">
-        {/* Feature groups */}
         <ChartCard title="Feature Engineering" subtitle="Groups retained after correlation & impact filtering">
           <div className="space-y-3">
             {engineeredFeatures.map((group) => (
@@ -113,7 +119,7 @@ export function ExplainabilityPage() {
               >
                 <div className="flex items-center justify-between">
                   <p className="font-display text-sm font-bold text-theme-primary">{group.group}</p>
-                  <span className="font-mono text-xs text-mck-sky">
+                  <span className="font-tabular text-xs text-mck-sky">
                     {group.retained}/{group.count} retained
                   </span>
                 </div>
@@ -125,7 +131,7 @@ export function ExplainabilityPage() {
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {group.features.map((f) => (
-                    <code key={f} className="rounded-md bg-mck-navy/10 px-2 py-0.5 font-mono text-[10px] text-mck-sky">
+                    <code key={f} className="rounded-md bg-mck-navy/10 px-2 py-0.5 font-tabular text-[10px] text-mck-sky">
                       {f}
                     </code>
                   ))}
@@ -135,7 +141,6 @@ export function ExplainabilityPage() {
           </div>
         </ChartCard>
 
-        {/* Global SHAP */}
         <ChartCard title="Global SHAP Importance" subtitle="Mean |SHAP| across portfolio — model-agnostic">
           <ResponsiveContainer width="100%" height={340}>
             <BarChart data={shapGlobalImportance} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
@@ -157,7 +162,6 @@ export function ExplainabilityPage() {
         </ChartCard>
       </section>
 
-      {/* Local SHAP waterfall */}
       <ChartCard
         title="Local SHAP Explanation"
         subtitle="Per-forecast breakdown — how features push prediction from base value"
@@ -203,8 +207,16 @@ export function ExplainabilityPage() {
 
         <p className="mt-4 text-sm leading-relaxed text-theme-secondary">
           Positive SHAP values (sky blue) increase the forecast above the base; negative values (coral) reduce it.
-          External indicators like rainfall and app engagement are among the largest positive drivers for this SKU.
+          Rainfall, kharif season, and field app engagement are top drivers for herbicide demand in Punjab.
         </p>
+
+        <button
+          type="button"
+          onClick={() => navigate('sku', { skuId, metricStep: 'sku' })}
+          className="btn-ghost mt-4"
+        >
+          View {skuId} deep dive
+        </button>
       </ChartCard>
     </PageShell>
   )
@@ -214,7 +226,7 @@ function ShapStat({ label, value, highlight }: { label: string; value: string; h
   return (
     <div className="rounded-xl p-3 ring-1 ring-[color:var(--border-subtle)]" style={{ background: 'var(--surface-inset)' }}>
       <p className="font-display text-[10px] font-bold uppercase tracking-wider text-theme-secondary">{label}</p>
-      <p className={cn('mt-1 font-mono text-sm font-bold', highlight ? 'text-mck-sky' : 'text-theme-primary')}>{value}</p>
+      <p className={cn('mt-1 font-tabular text-sm font-bold', highlight ? 'text-mck-sky' : 'text-theme-primary')}>{value}</p>
     </div>
   )
 }

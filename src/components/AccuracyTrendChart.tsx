@@ -12,7 +12,6 @@ import {
 } from 'recharts'
 import { useChartTheme } from '../hooks/useChartTheme'
 import type { MonthlyMetric } from '../data/mockData'
-import { LABELS } from '../data/mockData'
 import { chartColors, mckColors } from '../theme/mckinsey'
 import { cn } from '../lib/utils'
 
@@ -20,17 +19,19 @@ interface AccuracyTrendChartProps {
   data: MonthlyMetric[]
   compact?: boolean
   monthLimit?: number
+  showBias?: boolean
 }
 
 const FONT = 'Plus Jakarta Sans, system-ui, sans-serif'
 
-export function AccuracyTrendChart({ data, compact, monthLimit }: AccuracyTrendChartProps) {
+export function AccuracyTrendChart({ data, compact, monthLimit, showBias }: AccuracyTrendChartProps) {
   const theme = useChartTheme()
-  const [showModel, setShowModel] = useState(true)
-  const [showSalesTeam, setShowSalesTeam] = useState(true)
+  const [showAccuracy, setShowAccuracy] = useState(true)
+  const [showOver, setShowOver] = useState(false)
+  const [showUnder, setShowUnder] = useState(false)
 
   const filtered = useMemo(() => {
-    const rows = data.filter((d) => d.modelAccuracy > 0 || d.salesTeamAccuracy > 0)
+    const rows = data.filter((d) => d.modelAccuracy > 0)
     return monthLimit ? rows.slice(-monthLimit) : rows
   }, [data, monthLimit])
 
@@ -41,28 +42,44 @@ export function AccuracyTrendChart({ data, compact, monthLimit }: AccuracyTrendC
       <div className="flex flex-wrap gap-2">
         <button
           type="button"
-          onClick={() => setShowModel((v) => !v)}
+          onClick={() => setShowAccuracy((v) => !v)}
           className={cn(
             'cursor-pointer rounded-md px-2.5 py-1 text-xs font-semibold ring-1 transition-colors duration-200',
-            showModel
+            showAccuracy
               ? 'bg-mck-sky/15 text-mck-sky ring-mck-sky/30'
               : 'text-theme-muted ring-[color:var(--border-subtle)] hover:text-theme-primary',
           )}
         >
-          Model
+          Accuracy
         </button>
-        <button
-          type="button"
-          onClick={() => setShowSalesTeam((v) => !v)}
-          className={cn(
-            'cursor-pointer rounded-md px-2.5 py-1 text-xs font-semibold ring-1 transition-colors duration-200',
-            showSalesTeam
-              ? 'bg-mck-coral/15 text-mck-coral ring-mck-coral/30'
-              : 'text-theme-muted ring-[color:var(--border-subtle)] hover:text-theme-primary',
-          )}
-        >
-          {LABELS.salesTeam}
-        </button>
+        {(showBias) && (
+          <>
+            <button
+              type="button"
+              onClick={() => setShowOver((v) => !v)}
+              className={cn(
+                'cursor-pointer rounded-md px-2.5 py-1 text-xs font-semibold ring-1 transition-colors duration-200',
+                showOver
+                  ? 'bg-mck-blue/15 text-mck-blue ring-mck-blue/30'
+                  : 'text-theme-muted ring-[color:var(--border-subtle)] hover:text-theme-primary',
+              )}
+            >
+              Over-forecast
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowUnder((v) => !v)}
+              className={cn(
+                'cursor-pointer rounded-md px-2.5 py-1 text-xs font-semibold ring-1 transition-colors duration-200',
+                showUnder
+                  ? 'bg-mck-teal/15 text-mck-teal ring-mck-teal/30'
+                  : 'text-theme-muted ring-[color:var(--border-subtle)] hover:text-theme-primary',
+              )}
+            >
+              Under-forecast
+            </button>
+          </>
+        )}
       </div>
 
       <ResponsiveContainer width="100%" height={height}>
@@ -98,19 +115,28 @@ export function AccuracyTrendChart({ data, compact, monthLimit }: AccuracyTrendC
               fontFamily: FONT,
               fontSize: 12,
             }}
-            formatter={(value, name) => [
-              `${value ?? 0}%`,
-              name === 'modelAccuracy' ? 'Model' : LABELS.salesTeam,
-            ]}
+            formatter={(value, name) => {
+              const labels: Record<string, string> = {
+                modelAccuracy: 'Model accuracy',
+                overForecast: 'Over-forecast',
+                underForecast: 'Under-forecast',
+              }
+              return [`${value ?? 0}%`, labels[String(name)] ?? String(name)]
+            }}
             labelStyle={{ fontFamily: FONT, fontSize: 11, fontWeight: 600, marginBottom: 4 }}
           />
           <Legend
-            formatter={(value) =>
-              value === 'modelAccuracy' ? 'Model Accuracy' : LABELS.salesTeamAccuracy
-            }
+            formatter={(value) => {
+              const labels: Record<string, string> = {
+                modelAccuracy: 'Model Accuracy',
+                overForecast: 'Over-forecast bias',
+                underForecast: 'Under-forecast bias',
+              }
+              return labels[value] ?? value
+            }}
             wrapperStyle={{ paddingTop: 12, color: theme.legend, fontSize: 12, fontFamily: FONT }}
           />
-          {showModel && (
+          {showAccuracy && (
             <Area
               type="monotone"
               dataKey="modelAccuracy"
@@ -122,16 +148,26 @@ export function AccuracyTrendChart({ data, compact, monthLimit }: AccuracyTrendC
               activeDot={{ r: 6, strokeWidth: 2, stroke: chartColors.model, fill: theme.isDark ? mckColors.navy : '#fff' }}
             />
           )}
-          {showSalesTeam && (
+          {showOver && (
             <Line
               type="monotone"
-              dataKey="salesTeamAccuracy"
-              name="salesTeamAccuracy"
-              stroke={chartColors.rp}
+              dataKey="overForecast"
+              name="overForecast"
+              stroke={mckColors.blue}
               strokeWidth={2}
-              strokeDasharray="8 4"
+              strokeDasharray="6 3"
               dot={false}
-              activeDot={{ r: 6, strokeWidth: 0, fill: chartColors.rp }}
+            />
+          )}
+          {showUnder && (
+            <Line
+              type="monotone"
+              dataKey="underForecast"
+              name="underForecast"
+              stroke={mckColors.teal}
+              strokeWidth={2}
+              strokeDasharray="6 3"
+              dot={false}
             />
           )}
         </AreaChart>

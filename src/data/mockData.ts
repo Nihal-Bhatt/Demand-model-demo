@@ -1,4 +1,15 @@
-export type NavSection = 'overview' | 'accuracy' | 'performance' | 'forecast' | 'explainability' | 'pipeline'
+export type NavSection =
+  | 'overview'
+  | 'accuracy'
+  | 'performance'
+  | 'forecast'
+  | 'sku'
+  | 'explainability'
+  | 'pipeline'
+
+export type MetricStep = 'accuracy' | 'bias' | 'horizon' | 'territory' | 'sku' | 'explainability'
+
+export type ProductCategory = 'Herbicide' | 'Fungicide' | 'Insecticide' | 'Seed Care' | 'Nutrition'
 
 export const BRAND = {
   name: 'AgriCo',
@@ -6,30 +17,26 @@ export const BRAND = {
   tagline: 'Demand Planning',
 } as const
 
-export const LABELS = {
-  salesTeam: 'Sales Team',
-  salesTeamForecast: 'Sales Team Forecast',
-  salesTeamAccuracy: 'Sales Team Accuracy',
-  salesTeamBaseline: 'Sales Team baseline',
-  salesTeamError: 'Sales Team Error',
-} as const
+export const METRIC_FLOW: { id: MetricStep; label: string; hint: string }[] = [
+  { id: 'accuracy', label: 'Model Accuracy', hint: 'How close is the forecast?' },
+  { id: 'bias', label: 'Forecast Bias', hint: 'Over vs under-forecasting' },
+  { id: 'horizon', label: 'Horizon', hint: 'N+1 / N+2 / N+3 accuracy' },
+  { id: 'territory', label: 'Territory', hint: 'Regional performance' },
+  { id: 'sku', label: 'SKU Deep Dive', hint: 'Product-level detail' },
+  { id: 'explainability', label: 'Drivers', hint: 'Why the model predicts this' },
+]
 
 export interface MonthlyMetric {
   month: string
   modelAccuracy: number
-  salesTeamAccuracy: number
   modelError: number
-  salesTeamError: number
-  modelOverForecast: number
-  salesTeamOverForecast: number
-  modelUnderForecast: number
-  salesTeamUnderForecast: number
+  overForecast: number
+  underForecast: number
 }
 
 export interface AccuracyBucket {
   range: string
   modelShare: number
-  salesTeamShare: number
 }
 
 export interface TerritoryPerformance {
@@ -37,19 +44,28 @@ export interface TerritoryPerformance {
   salesCr: number
   salesShare: number
   modelAccuracy: number
-  salesTeamAccuracy: number
-  improvement: number
+  wmape: number
+  skuCount: number
 }
 
 export interface SkuPerformance {
   sku: string
   product: string
+  category: ProductCategory
   salesShare: number
+  salesCr: number
   modelAccuracy: number
-  salesTeamAccuracy: number
-  improvement: number
+  wmape: number
   bestModel: string
   segment: 'High Volume' | 'Medium Volume' | 'Low Volume' | 'Sparse'
+}
+
+export interface SkuDeepDive extends SkuPerformance {
+  description: string
+  monthlyAccuracy: { month: string; accuracy: number }[]
+  horizonAccuracy: { horizon: string; accuracy: number; forecastQty: number }[]
+  territories: { name: string; accuracy: number; salesCr: number; forecastQty: number }[]
+  topDrivers: { feature: string; impact: number }[]
 }
 
 export interface DashboardData {
@@ -59,19 +75,18 @@ export interface DashboardData {
   period: string
   summary: {
     modelAccuracy: number
-    salesTeamAccuracy: number
-    accuracyImprovement: number
-    overForecastReduction: number
-    underForecastReduction: number
-    salesHighAccuracyBucket: number
-    salesLowAccuracyBucketSalesTeam: number
-    territoriesImproved: number
-    territoriesImprovedSalesShare: number
-    productsImproved: number
-    productsImprovedSalesShare: number
+    wmape: number
+    highAccuracyCoverage: number
+    overForecastRate: number
+    underForecastRate: number
+    territoriesAboveTarget: number
+    territoriesAboveTargetShare: number
+    skusAboveTarget: number
+    skusAboveTargetShare: number
     totalSkus: number
     totalTerritories: number
     forecastHorizon: string
+    accuracyTarget: number
   }
   monthly: MonthlyMetric[]
   buckets: AccuracyBucket[]
@@ -81,26 +96,26 @@ export interface DashboardData {
 }
 
 const monthly: MonthlyMetric[] = [
-  { month: 'Jul-24', modelAccuracy: 0, salesTeamAccuracy: 0, modelError: 0, salesTeamError: 0, modelOverForecast: 0, salesTeamOverForecast: 0, modelUnderForecast: 0, salesTeamUnderForecast: 0 },
-  { month: 'Aug-24', modelAccuracy: 16, salesTeamAccuracy: 23, modelError: 16, salesTeamError: 23, modelOverForecast: 31, salesTeamOverForecast: 41, modelUnderForecast: 49, salesTeamUnderForecast: 49 },
-  { month: 'Sep-24', modelAccuracy: 21, salesTeamAccuracy: 23, modelError: 21, salesTeamError: 23, modelOverForecast: 0, salesTeamOverForecast: 45, modelUnderForecast: 19, salesTeamUnderForecast: 0 },
-  { month: 'Oct-24', modelAccuracy: 17, salesTeamAccuracy: 23, modelError: 17, salesTeamError: 23, modelOverForecast: 32, salesTeamOverForecast: 59, modelUnderForecast: 0, salesTeamUnderForecast: 31 },
-  { month: 'Nov-24', modelAccuracy: 14, salesTeamAccuracy: 26, modelError: 14, salesTeamError: 26, modelOverForecast: 23, salesTeamOverForecast: 31, modelUnderForecast: 0, salesTeamUnderForecast: 0 },
-  { month: 'Dec-24', modelAccuracy: 14, salesTeamAccuracy: 14, modelError: 14, salesTeamError: 14, modelOverForecast: 16, salesTeamOverForecast: 23, modelUnderForecast: 0, salesTeamUnderForecast: 0 },
-  { month: 'Jan-25', modelAccuracy: 13, salesTeamAccuracy: 14, modelError: 13, salesTeamError: 14, modelOverForecast: 17, salesTeamOverForecast: 18, modelUnderForecast: 18, salesTeamUnderForecast: 18 },
-  { month: 'Feb-25', modelAccuracy: 18, salesTeamAccuracy: 12, modelError: 18, salesTeamError: 12, modelOverForecast: 29, salesTeamOverForecast: 18, modelUnderForecast: 16, salesTeamUnderForecast: 19 },
-  { month: 'Mar-25', modelAccuracy: 12, salesTeamAccuracy: 18, modelError: 12, salesTeamError: 18, modelOverForecast: 32, salesTeamOverForecast: 18, modelUnderForecast: 15, salesTeamUnderForecast: 20 },
-  { month: 'Apr-25', modelAccuracy: 17, salesTeamAccuracy: 10, modelError: 17, salesTeamError: 10, modelOverForecast: 23, salesTeamOverForecast: 15, modelUnderForecast: 18, salesTeamUnderForecast: 15 },
-  { month: 'May-25', modelAccuracy: 23, salesTeamAccuracy: 11, modelError: 23, salesTeamError: 11, modelOverForecast: 16, salesTeamOverForecast: 21, modelUnderForecast: 16, salesTeamUnderForecast: 13 },
-  { month: 'Jun-25', modelAccuracy: 16, salesTeamAccuracy: 13, modelError: 16, salesTeamError: 13, modelOverForecast: 17, salesTeamOverForecast: 10, modelUnderForecast: 15, salesTeamUnderForecast: 18 },
-  { month: 'Jul-25', modelAccuracy: 16, salesTeamAccuracy: 21, modelError: 16, salesTeamError: 21, modelOverForecast: 18, salesTeamOverForecast: 32, modelUnderForecast: 18, salesTeamUnderForecast: 19 },
-  { month: 'Aug-25', modelAccuracy: 21, salesTeamAccuracy: 10, modelError: 21, salesTeamError: 10, modelOverForecast: 19, salesTeamOverForecast: 18, modelUnderForecast: 20, salesTeamUnderForecast: 15 },
-  { month: 'Sep-25', modelAccuracy: 10, salesTeamAccuracy: 11, modelError: 10, salesTeamError: 11, modelOverForecast: 15, salesTeamOverForecast: 21, modelUnderForecast: 18, salesTeamUnderForecast: 13 },
-  { month: 'Oct-25', modelAccuracy: 11, salesTeamAccuracy: 13, modelError: 11, salesTeamError: 13, modelOverForecast: 18, salesTeamOverForecast: 32, modelUnderForecast: 18, salesTeamUnderForecast: 14 },
-  { month: 'Nov-25', modelAccuracy: 13, salesTeamAccuracy: 14, modelError: 13, salesTeamError: 14, modelOverForecast: 20, salesTeamOverForecast: 18, modelUnderForecast: 15, salesTeamUnderForecast: 15 },
-  { month: 'Dec-25', modelAccuracy: 14, salesTeamAccuracy: 14, modelError: 14, salesTeamError: 14, modelOverForecast: 15, salesTeamOverForecast: 21, modelUnderForecast: 18, salesTeamUnderForecast: 18 },
-  { month: 'Jan-26', modelAccuracy: 15, salesTeamAccuracy: 0, modelError: 15, salesTeamError: 0, modelOverForecast: 21, salesTeamOverForecast: 0, modelUnderForecast: 0, salesTeamUnderForecast: 0 },
-  { month: 'Feb-26', modelAccuracy: 0, salesTeamAccuracy: 0, modelError: 0, salesTeamError: 0, modelOverForecast: 0, salesTeamOverForecast: 0, modelUnderForecast: 0, salesTeamUnderForecast: 0 },
+  { month: 'Jul-24', modelAccuracy: 0, modelError: 0, overForecast: 0, underForecast: 0 },
+  { month: 'Aug-24', modelAccuracy: 72, modelError: 28, overForecast: 31, underForecast: 18 },
+  { month: 'Sep-24', modelAccuracy: 74, modelError: 26, overForecast: 22, underForecast: 19 },
+  { month: 'Oct-24', modelAccuracy: 76, modelError: 24, overForecast: 28, underForecast: 14 },
+  { month: 'Nov-24', modelAccuracy: 78, modelError: 22, overForecast: 24, underForecast: 12 },
+  { month: 'Dec-24', modelAccuracy: 77, modelError: 23, overForecast: 20, underForecast: 15 },
+  { month: 'Jan-25', modelAccuracy: 79, modelError: 21, overForecast: 18, underForecast: 16 },
+  { month: 'Feb-25', modelAccuracy: 80, modelError: 20, overForecast: 19, underForecast: 14 },
+  { month: 'Mar-25', modelAccuracy: 78, modelError: 22, overForecast: 25, underForecast: 13 },
+  { month: 'Apr-25', modelAccuracy: 81, modelError: 19, overForecast: 17, underForecast: 15 },
+  { month: 'May-25', modelAccuracy: 83, modelError: 17, overForecast: 16, underForecast: 12 },
+  { month: 'Jun-25', modelAccuracy: 82, modelError: 18, overForecast: 18, underForecast: 14 },
+  { month: 'Jul-25', modelAccuracy: 84, modelError: 16, overForecast: 15, underForecast: 11 },
+  { month: 'Aug-25', modelAccuracy: 85, modelError: 15, overForecast: 14, underForecast: 10 },
+  { month: 'Sep-25', modelAccuracy: 83, modelError: 17, overForecast: 16, underForecast: 12 },
+  { month: 'Oct-25', modelAccuracy: 84, modelError: 16, overForecast: 15, underForecast: 11 },
+  { month: 'Nov-25', modelAccuracy: 85, modelError: 15, overForecast: 14, underForecast: 10 },
+  { month: 'Dec-25', modelAccuracy: 86, modelError: 14, overForecast: 13, underForecast: 9 },
+  { month: 'Jan-26', modelAccuracy: 87, modelError: 13, overForecast: 12, underForecast: 8 },
+  { month: 'Feb-26', modelAccuracy: 0, modelError: 0, overForecast: 0, underForecast: 0 },
 ]
 
 export const agriCoData: DashboardData = {
@@ -110,44 +125,45 @@ export const agriCoData: DashboardData = {
   period: "Jul'24 – Feb'26",
   summary: {
     modelAccuracy: 82,
-    salesTeamAccuracy: 25,
-    accuracyImprovement: 57,
-    overForecastReduction: 70,
-    underForecastReduction: 22,
-    salesHighAccuracyBucket: 67,
-    salesLowAccuracyBucketSalesTeam: 41,
-    territoriesImproved: 204,
-    territoriesImprovedSalesShare: 83,
-    productsImproved: 52,
-    productsImprovedSalesShare: 84,
+    wmape: 0.17,
+    highAccuracyCoverage: 67,
+    overForecastRate: 16,
+    underForecastRate: 12,
+    territoriesAboveTarget: 204,
+    territoriesAboveTargetShare: 65,
+    skusAboveTarget: 892,
+    skusAboveTargetShare: 72,
     totalSkus: 1240,
     totalTerritories: 312,
     forecastHorizon: 'N+1, N+2, N+3',
+    accuracyTarget: 75,
   },
   monthly,
   buckets: [
-    { range: '<10%', modelShare: 5, salesTeamShare: 41 },
-    { range: '10–30%', modelShare: 12, salesTeamShare: 18 },
-    { range: '30–60%', modelShare: 16, salesTeamShare: 22 },
-    { range: '>60%', modelShare: 67, salesTeamShare: 19 },
+    { range: '<10%', modelShare: 5 },
+    { range: '10–30%', modelShare: 12 },
+    { range: '30–60%', modelShare: 16 },
+    { range: '>60%', modelShare: 67 },
   ],
   territories: [
-    { name: 'Punjab North', salesCr: 142, salesShare: 8.2, modelAccuracy: 88, salesTeamAccuracy: 22, improvement: 66 },
-    { name: 'Maharashtra West', salesCr: 128, salesShare: 7.4, modelAccuracy: 85, salesTeamAccuracy: 19, improvement: 66 },
-    { name: 'UP Central', salesCr: 115, salesShare: 6.6, modelAccuracy: 79, salesTeamAccuracy: 28, improvement: 51 },
-    { name: 'Karnataka South', salesCr: 98, salesShare: 5.7, modelAccuracy: 84, salesTeamAccuracy: 24, improvement: 60 },
-    { name: 'Gujarat West', salesCr: 91, salesShare: 5.3, modelAccuracy: 81, salesTeamAccuracy: 31, improvement: 50 },
-    { name: 'AP Coastal', salesCr: 87, salesShare: 5.0, modelAccuracy: 76, salesTeamAccuracy: 18, improvement: 58 },
-    { name: 'Rajasthan', salesCr: 76, salesShare: 4.4, modelAccuracy: 83, salesTeamAccuracy: 27, improvement: 56 },
-    { name: 'MP Central', salesCr: 68, salesShare: 3.9, modelAccuracy: 77, salesTeamAccuracy: 21, improvement: 56 },
+    { name: 'Punjab North', salesCr: 142, salesShare: 8.2, modelAccuracy: 88, wmape: 0.12, skuCount: 186 },
+    { name: 'Maharashtra West', salesCr: 128, salesShare: 7.4, modelAccuracy: 85, wmape: 0.14, skuCount: 172 },
+    { name: 'UP Central', salesCr: 115, salesShare: 6.6, modelAccuracy: 79, wmape: 0.18, skuCount: 198 },
+    { name: 'Karnataka South', salesCr: 98, salesShare: 5.7, modelAccuracy: 84, wmape: 0.15, skuCount: 154 },
+    { name: 'Gujarat West', salesCr: 91, salesShare: 5.3, modelAccuracy: 81, wmape: 0.16, skuCount: 141 },
+    { name: 'AP Coastal', salesCr: 87, salesShare: 5.0, modelAccuracy: 76, wmape: 0.19, skuCount: 132 },
+    { name: 'Rajasthan', salesCr: 76, salesShare: 4.4, modelAccuracy: 83, wmape: 0.15, skuCount: 118 },
+    { name: 'MP Central', salesCr: 68, salesShare: 3.9, modelAccuracy: 77, wmape: 0.18, skuCount: 124 },
   ],
   skus: [
-    { sku: 'AC-1042', product: 'Herbicide Alpha', salesShare: 6.2, modelAccuracy: 91, salesTeamAccuracy: 18, improvement: 73, bestModel: 'XGBoost', segment: 'High Volume' },
-    { sku: 'AC-2087', product: 'Fungicide Pro', salesShare: 5.4, modelAccuracy: 86, salesTeamAccuracy: 22, improvement: 64, bestModel: 'LightGBM', segment: 'High Volume' },
-    { sku: 'AC-3310', product: 'Insecticide Max', salesShare: 4.8, modelAccuracy: 84, salesTeamAccuracy: 19, improvement: 65, bestModel: 'Prophet', segment: 'High Volume' },
-    { sku: 'AC-4421', product: 'Seed Treatment', salesShare: 3.9, modelAccuracy: 78, salesTeamAccuracy: 31, improvement: 47, bestModel: 'AutoARIMA', segment: 'Medium Volume' },
-    { sku: 'AC-5563', product: 'Growth Regulator', salesShare: 3.1, modelAccuracy: 72, salesTeamAccuracy: 28, improvement: 44, bestModel: 'LSTM', segment: 'Medium Volume' },
-    { sku: 'AC-6678', product: 'Micronutrient Mix', salesShare: 2.4, modelAccuracy: 69, salesTeamAccuracy: 35, improvement: 34, bestModel: 'ETS', segment: 'Low Volume' },
+    { sku: 'AC-1042', product: 'Herbicide Alpha', category: 'Herbicide', salesShare: 6.2, salesCr: 108, modelAccuracy: 91, wmape: 0.09, bestModel: 'XGBoost', segment: 'High Volume' },
+    { sku: 'AC-2087', product: 'Fungicide Pro', category: 'Fungicide', salesShare: 5.4, salesCr: 94, modelAccuracy: 86, wmape: 0.12, bestModel: 'LightGBM', segment: 'High Volume' },
+    { sku: 'AC-3310', product: 'Insecticide Max', category: 'Insecticide', salesShare: 4.8, salesCr: 84, modelAccuracy: 84, wmape: 0.13, bestModel: 'Prophet', segment: 'High Volume' },
+    { sku: 'AC-4421', product: 'Seed Treatment', category: 'Seed Care', salesShare: 3.9, salesCr: 68, modelAccuracy: 78, wmape: 0.17, bestModel: 'AutoARIMA', segment: 'Medium Volume' },
+    { sku: 'AC-5563', product: 'Growth Regulator', category: 'Nutrition', salesShare: 3.1, salesCr: 54, modelAccuracy: 72, wmape: 0.19, bestModel: 'LSTM', segment: 'Medium Volume' },
+    { sku: 'AC-6678', product: 'Micronutrient Mix', category: 'Nutrition', salesShare: 2.4, salesCr: 42, modelAccuracy: 69, wmape: 0.21, bestModel: 'ETS', segment: 'Low Volume' },
+    { sku: 'AC-7721', product: 'Weed Shield Plus', category: 'Herbicide', salesShare: 2.1, salesCr: 37, modelAccuracy: 88, wmape: 0.11, bestModel: 'XGBoost', segment: 'Medium Volume' },
+    { sku: 'AC-8834', product: 'Crop Guard', category: 'Insecticide', salesShare: 1.8, salesCr: 31, modelAccuracy: 81, wmape: 0.14, bestModel: 'LightGBM', segment: 'Low Volume' },
   ],
   models: [
     { name: 'XGBoost', share: 28, avgWmape: 0.14 },
@@ -157,6 +173,91 @@ export const agriCoData: DashboardData = {
     { name: 'LSTM', share: 10, avgWmape: 0.19 },
     { name: 'ETS / Others', share: 8, avgWmape: 0.23 },
   ],
+}
+
+const skuDeepDiveBase: Record<string, Omit<SkuDeepDive, keyof SkuPerformance>> = {
+  'AC-1042': {
+    description: 'Broad-spectrum herbicide for kharif cereals. High seasonality tied to monsoon onset.',
+    monthlyAccuracy: monthly.filter((m) => m.modelAccuracy > 0).slice(-8).map((m) => ({ month: m.month, accuracy: m.modelAccuracy + 6 })),
+    horizonAccuracy: [
+      { horizon: 'N+1', accuracy: 93, forecastQty: 12400 },
+      { horizon: 'N+2', accuracy: 89, forecastQty: 11800 },
+      { horizon: 'N+3', accuracy: 84, forecastQty: 10900 },
+    ],
+    territories: [
+      { name: 'Punjab North', accuracy: 94, salesCr: 38, forecastQty: 5200 },
+      { name: 'UP Central', accuracy: 90, salesCr: 28, forecastQty: 3800 },
+      { name: 'Haryana East', accuracy: 88, salesCr: 22, forecastQty: 2400 },
+    ],
+    topDrivers: [
+      { feature: '4-week rolling demand', impact: 0.31 },
+      { feature: 'Rainfall (lag 2)', impact: 0.22 },
+      { feature: 'Kharif season flag', impact: 0.18 },
+      { feature: 'Field app orders', impact: 0.14 },
+    ],
+  },
+  'AC-2087': {
+    description: 'Systemic fungicide for rice & wheat. Disease pressure correlates with humidity.',
+    monthlyAccuracy: monthly.filter((m) => m.modelAccuracy > 0).slice(-8).map((m) => ({ month: m.month, accuracy: m.modelAccuracy + 2 })),
+    horizonAccuracy: [
+      { horizon: 'N+1', accuracy: 88, forecastQty: 8200 },
+      { horizon: 'N+2', accuracy: 85, forecastQty: 7900 },
+      { horizon: 'N+3', accuracy: 80, forecastQty: 7200 },
+    ],
+    territories: [
+      { name: 'Maharashtra West', accuracy: 89, salesCr: 32, forecastQty: 4100 },
+      { name: 'Karnataka South', accuracy: 86, salesCr: 24, forecastQty: 2900 },
+    ],
+    topDrivers: [
+      { feature: 'Humidity index', impact: 0.26 },
+      { feature: 'Disease alert API', impact: 0.21 },
+      { feature: '4-week rolling demand', impact: 0.19 },
+    ],
+  },
+  'AC-3310': {
+    description: 'Contact insecticide for cotton & soybean. Peak demand in pest outbreak windows.',
+    monthlyAccuracy: monthly.filter((m) => m.modelAccuracy > 0).slice(-8).map((m) => ({ month: m.month, accuracy: m.modelAccuracy })),
+    horizonAccuracy: [
+      { horizon: 'N+1', accuracy: 86, forecastQty: 15600 },
+      { horizon: 'N+2', accuracy: 82, forecastQty: 14200 },
+      { horizon: 'N+3', accuracy: 78, forecastQty: 12800 },
+    ],
+    territories: [
+      { name: 'Gujarat West', accuracy: 87, salesCr: 29, forecastQty: 4800 },
+      { name: 'MP Central', accuracy: 82, salesCr: 21, forecastQty: 3600 },
+    ],
+    topDrivers: [
+      { feature: 'Pest pressure index', impact: 0.28 },
+      { feature: 'Temperature anomaly', impact: 0.17 },
+      { feature: 'Crop calendar', impact: 0.15 },
+    ],
+  },
+}
+
+export function getSkuDeepDive(skuId: string): SkuDeepDive | null {
+  const base = agriCoData.skus.find((s) => s.sku === skuId)
+  if (!base) return null
+  const extra = skuDeepDiveBase[skuId] ?? {
+    description: `${base.product} — ${base.category} portfolio SKU.`,
+    monthlyAccuracy: monthly.filter((m) => m.modelAccuracy > 0).slice(-6).map((m, i) => ({ month: m.month, accuracy: base.modelAccuracy - 2 + (i % 3) })),
+    horizonAccuracy: [
+      { horizon: 'N+1', accuracy: base.modelAccuracy, forecastQty: 5000 },
+      { horizon: 'N+2', accuracy: base.modelAccuracy - 4, forecastQty: 4600 },
+      { horizon: 'N+3', accuracy: base.modelAccuracy - 8, forecastQty: 4200 },
+    ],
+    territories: agriCoData.territories.slice(0, 2).map((t) => ({
+      name: t.name,
+      accuracy: base.modelAccuracy - 3,
+      salesCr: Math.round(t.salesCr * (base.salesShare / 10)),
+      forecastQty: 2000,
+    })),
+    topDrivers: [
+      { feature: '4-week rolling demand', impact: 0.24 },
+      { feature: 'Seasonality', impact: 0.16 },
+      { feature: 'Promo scheme flag', impact: 0.11 },
+    ],
+  }
+  return { ...base, ...extra }
 }
 
 export const pipelineSteps = [
@@ -169,12 +270,14 @@ export const pipelineSteps = [
 ]
 
 export const forecastHorizons = [
-  { horizon: 'N+1', modelAccuracy: 84, salesTeamAccuracy: 27, volume: 42 },
-  { horizon: 'N+2', modelAccuracy: 79, salesTeamAccuracy: 23, volume: 35 },
-  { horizon: 'N+3', modelAccuracy: 74, salesTeamAccuracy: 21, volume: 23 },
+  { horizon: 'N+1', modelAccuracy: 84, volume: 42 },
+  { horizon: 'N+2', modelAccuracy: 79, volume: 35 },
+  { horizon: 'N+3', modelAccuracy: 74, volume: 23 },
 ]
 
 export const segments = ['All', 'High Volume', 'Medium Volume', 'Low Volume', 'Sparse'] as const
+
+export const productCategories = ['All', 'Herbicide', 'Fungicide', 'Insecticide', 'Seed Care', 'Nutrition'] as const
 
 export const pipelineRuns = [
   { id: 'RUN-2847', date: '11 Jun 2026', version: 'v2.5.1', status: 'Running', skus: 1240, duration: '2h 41m' },
@@ -183,10 +286,10 @@ export const pipelineRuns = [
 ]
 
 export const reviewQueue = [
-  { sku: 'AC-1042', territory: 'Punjab North', horizon: 'N+1', modelQty: 12400, salesTeamQty: 9800, variance: 26.5, status: 'Pending Review' },
-  { sku: 'AC-2087', territory: 'Maharashtra West', horizon: 'N+2', modelQty: 8200, salesTeamQty: 7900, variance: 3.8, status: 'Approved' },
-  { sku: 'AC-3310', territory: 'UP Central', horizon: 'N+1', modelQty: 15600, salesTeamQty: 11200, variance: 39.3, status: 'Change Requested' },
-  { sku: 'AC-4421', territory: 'Karnataka South', horizon: 'N+3', modelQty: 4300, salesTeamQty: 4100, variance: 4.9, status: 'Approved' },
+  { sku: 'AC-1042', territory: 'Punjab North', horizon: 'N+1', modelQty: 12400, forecastAccuracy: 93, wmape: 0.07, status: 'Pending Review' },
+  { sku: 'AC-2087', territory: 'Maharashtra West', horizon: 'N+2', modelQty: 8200, forecastAccuracy: 85, wmape: 0.12, status: 'Approved' },
+  { sku: 'AC-3310', territory: 'UP Central', horizon: 'N+1', modelQty: 15600, forecastAccuracy: 86, wmape: 0.11, status: 'Change Requested' },
+  { sku: 'AC-4421', territory: 'Karnataka South', horizon: 'N+3', modelQty: 4300, forecastAccuracy: 78, wmape: 0.16, status: 'Approved' },
 ]
 
 export const modelLeaderboard = [
@@ -245,9 +348,4 @@ export const shapLocalExample = {
   ],
 }
 
-export const explainabilitySkus = [
-  'AC-1042 — Herbicide Alpha',
-  'AC-2087 — Fungicide Pro',
-  'AC-3310 — Insecticide Max',
-  'AC-4421 — Seed Treatment',
-]
+export const explainabilitySkus = agriCoData.skus.map((s) => `${s.sku} — ${s.product}`)

@@ -1,16 +1,25 @@
+import { AgriPageHero, CropRowIcon, FarmerIcon } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
+import { MetricFlowBar } from '../components/MetricFlowBar'
 import { PipelineStatus } from '../components/PipelineStatus'
-import { PageHeader, PageShell } from '../components/shared'
+import { PageShell } from '../components/shared'
 import { pipelineRuns, pipelineSteps } from '../data/mockData'
 import { cn } from '../lib/utils'
 
 export function PipelinePage() {
   return (
     <PageShell>
-      <PageHeader
-        title="Pipeline Status"
-        subtitle="Thunderbird forecast engine · preprocessing through post-processing"
-      />
+      <MetricFlowBar compact />
+
+      <div className="relative">
+        <AgriPageHero
+          title="Thunderbird forecast pipeline"
+          subtitle="Weekly batch · preprocessing through post-processing for all territory × SKU combinations"
+        />
+        <div className="pointer-events-none absolute bottom-4 right-8 hidden opacity-25 lg:block">
+          <FarmerIcon size={56} />
+        </div>
+      </div>
 
       <section className="grid gap-4 sm:grid-cols-4">
         {[
@@ -21,7 +30,7 @@ export function PipelinePage() {
         ].map((s) => (
           <div key={s.label} className="elevated-card p-4">
             <p className="font-display text-xs font-bold uppercase tracking-wider text-theme-secondary">{s.label}</p>
-            <p className="mt-2 font-mono text-xl font-bold text-theme-primary">{s.value}</p>
+            <p className="mt-2 font-tabular text-xl font-bold text-theme-primary">{s.value}</p>
             <p className="mt-1 font-body text-xs text-theme-secondary">{s.sub}</p>
           </div>
         ))}
@@ -33,6 +42,9 @@ export function PipelinePage() {
         </ChartCard>
 
         <ChartCard title="Run History" subtitle="Recent Thunderbird executions">
+          <div className="mb-4 flex justify-end opacity-40">
+            <CropRowIcon size={80} />
+          </div>
           <div className="space-y-3">
             {pipelineRuns.map((run) => (
               <div
@@ -55,7 +67,7 @@ export function PipelinePage() {
                   >
                     {run.status}
                   </span>
-                  <p className="mt-1 font-mono text-xs text-theme-secondary">{run.skus} SKUs · {run.duration}</p>
+                  <p className="mt-1 font-tabular text-xs text-theme-secondary">{run.skus} SKUs · {run.duration}</p>
                 </div>
               </div>
             ))}
@@ -74,7 +86,7 @@ export function PipelinePage() {
             { key: 'output_path', value: 'data/model_outputs/' },
           ].map((cfg) => (
             <div key={cfg.key} className="rounded-lg px-3 py-2.5 ring-1 ring-[color:var(--border-subtle)]" style={{ background: 'var(--surface-muted)' }}>
-              <p className="font-mono text-[10px] uppercase tracking-wider text-mck-sky">{cfg.key}</p>
+              <p className="font-tabular text-[10px] uppercase tracking-wider text-mck-sky">{cfg.key}</p>
               <p className="mt-1 font-body text-sm font-medium text-theme-primary">{cfg.value}</p>
             </div>
           ))}

@@ -12,6 +12,7 @@ import {
   Target,
   TrendingUp,
   BrainCircuit,
+  PackageSearch,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { NavSection } from '../data/mockData'
@@ -23,6 +24,7 @@ const navItems: { id: NavSection; label: string; icon: typeof LayoutDashboard }[
   { id: 'accuracy', label: 'Accuracy Trends', icon: LineChart },
   { id: 'performance', label: 'Model Performance', icon: BarChart3 },
   { id: 'forecast', label: 'Forecast Analysis', icon: Target },
+  { id: 'sku', label: 'SKU Deep Dive', icon: PackageSearch },
   { id: 'explainability', label: 'Forecast Explainability', icon: BrainCircuit },
   { id: 'pipeline', label: 'Pipeline Status', icon: Activity },
 ]

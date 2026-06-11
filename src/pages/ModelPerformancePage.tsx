@@ -1,29 +1,35 @@
+import { AgriPageHero } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
 import { ModelMixChart } from '../components/ModelMixChart'
-import { FormulaLine, PageHeader, PageShell } from '../components/shared'
+import { MetricFlowBar } from '../components/MetricFlowBar'
+import { FormulaLine, PageShell } from '../components/shared'
+import { useDashboard } from '../context/DashboardContext'
 import { agriCoData, modelLeaderboard } from '../data/mockData'
 import { formatPercent } from '../lib/utils'
 import { cn } from '../lib/utils'
 
 export function ModelPerformancePage() {
   const data = agriCoData
+  const { navigate } = useDashboard()
 
   return (
     <PageShell>
-      <PageHeader
-        title="Model Performance"
-        subtitle="Best-fit model selection by wMAPE · volume-weighted accuracy across SKU portfolio"
+      <MetricFlowBar compact />
+
+      <AgriPageHero
+        title="Model selection & wMAPE ranking"
+        subtitle="Best-fit algorithms per SKU · volume-weighted accuracy across crop protection portfolio"
       />
 
       <section className="grid gap-4 sm:grid-cols-3">
         {[
           { label: 'Models in ensemble', value: '12', sub: 'Stat + ML + Deep learning' },
-          { label: 'Avg portfolio wMAPE', value: '0.17', sub: 'Weighted by sales ₹' },
+          { label: 'Avg portfolio wMAPE', value: data.summary.wmape.toFixed(2), sub: 'Weighted by sales ₹' },
           { label: 'SKUs auto-selected', value: '94%', sub: 'Lowest wMAPE per SKU' },
         ].map((stat) => (
           <div key={stat.label} className="elevated-card p-5">
             <p className="font-display text-xs font-bold uppercase tracking-wider text-theme-secondary">{stat.label}</p>
-            <p className="mt-2 font-mono text-3xl font-bold text-theme-primary">{stat.value}</p>
+            <p className="mt-2 font-tabular text-3xl font-bold text-theme-primary">{stat.value}</p>
             <p className="mt-1 font-body text-sm text-theme-secondary">{stat.sub}</p>
           </div>
         ))}
@@ -34,12 +40,22 @@ export function ModelPerformancePage() {
           <ModelMixChart data={data.models} />
         </ChartCard>
 
-        <ChartCard title="Model Leaderboard" subtitle="Ranked by SKU coverage and wMAPE">
+        <ChartCard
+          title="Model Leaderboard"
+          subtitle="Click a model to see top SKUs"
+          action={
+            <button type="button" onClick={() => navigate('sku', { metricStep: 'sku' })} className="btn-ghost text-xs">
+              SKU catalog
+            </button>
+          }
+        >
           <div className="space-y-2">
             {modelLeaderboard.map((row) => (
-              <div
+              <button
                 key={row.rank}
-                className="flex items-center gap-4 rounded-xl px-4 py-3 ring-1 ring-[color:var(--border-subtle)] transition-all hover:ring-mck-sky/30"
+                type="button"
+                onClick={() => navigate('sku', { metricStep: 'sku' })}
+                className="flex w-full cursor-pointer items-center gap-4 rounded-xl px-4 py-3 text-left ring-1 ring-[color:var(--border-subtle)] transition-all hover:ring-mck-sky/30"
                 style={{ background: 'var(--surface-inset)' }}
               >
                 <span
@@ -57,8 +73,8 @@ export function ModelPerformancePage() {
                   <p className="font-display font-bold text-theme-primary">{row.model}</p>
                   <p className="font-body text-xs text-theme-secondary">{row.skus} SKUs · wMAPE {row.avgWmape.toFixed(2)}</p>
                 </div>
-                <span className="font-mono text-sm font-bold text-mck-success">{formatPercent(row.accuracy)}</span>
-              </div>
+                <span className="font-tabular text-sm font-bold text-mck-success">{formatPercent(row.accuracy)}</span>
+              </button>
             ))}
           </div>
         </ChartCard>
@@ -76,7 +92,7 @@ export function ModelPerformancePage() {
               <div key={s.segment} className="rounded-xl p-4 ring-1 ring-[color:var(--border-subtle)]" style={{ background: 'var(--surface-muted)' }}>
                 <p className={cn('font-display text-sm font-bold', s.color)}>{s.segment}</p>
                 <p className="mt-1 font-body text-xs text-theme-secondary">{s.models}</p>
-                <p className="mt-2 font-mono text-lg font-bold text-theme-primary">{s.share}</p>
+                <p className="mt-2 font-tabular text-lg font-bold text-theme-primary">{s.share}</p>
               </div>
             ))}
           </div>

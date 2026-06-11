@@ -1,22 +1,26 @@
 import { useMemo, useState } from 'react'
 import { AnimatePresence, motion } from 'framer-motion'
-import { Filter, Search, X } from 'lucide-react'
+import { ArrowRight, Filter, Search, X } from 'lucide-react'
+import { AgriPageHero } from '../components/agri/AgriIllustrations'
 import { AccuracyTrendChart } from '../components/AccuracyTrendChart'
 import { ChartCard } from '../components/ChartCard'
 import { HorizonChart } from '../components/ModelMixChart'
 import { KpiCard } from '../components/KpiCard'
+import { MetricFlowBar } from '../components/MetricFlowBar'
 import { PerformanceTable } from '../components/PerformanceTable'
 import { SegmentedControl } from '../components/SegmentedControl'
 import { HeroStat, InsightBlock, PageShell } from '../components/shared'
-import { agriCoData, forecastHorizons, LABELS, segments } from '../data/mockData'
+import { useDashboard } from '../context/DashboardContext'
+import { agriCoData, forecastHorizons, segments } from '../data/mockData'
 import { cn, formatCr, formatPercent } from '../lib/utils'
 
-type KpiFocus = 'accuracy' | 'over' | 'under' | 'coverage'
+type KpiFocus = 'accuracy' | 'wmape' | 'over' | 'coverage'
 type ChartRange = '6' | '12' | 'all'
 type InsightFocus = 'territories' | 'products' | 'granularity'
 
 export function OverviewPage() {
   const data = agriCoData
+  const { navigate } = useDashboard()
   const [tableView, setTableView] = useState<'territory' | 'sku'>('territory')
   const [segment, setSegment] = useState<(typeof segments)[number]>('All')
   const [kpiFocus, setKpiFocus] = useState<KpiFocus>('accuracy')
@@ -42,25 +46,30 @@ export function OverviewPage() {
 
   return (
     <PageShell>
+      <MetricFlowBar />
+
+      <AgriPageHero
+        title="Model forecast accuracy at a glance"
+        subtitle={`${formatPercent(data.summary.modelAccuracy)} portfolio accuracy · target ${formatPercent(data.summary.accuracyTarget)} · ${data.level}`}
+      />
+
       <section className="elevated-card overflow-hidden p-0">
         <div className="gradient-mck-glow px-6 py-5 lg:px-8 lg:py-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
               <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-mck-sky/80">Headline Insight</p>
               <p className="mt-2 font-display text-xl font-bold text-white lg:text-2xl">
-                Model delivers{' '}
-                <span className="text-mck-sky">{formatPercent(data.summary.accuracyImprovement)}</span> higher accuracy
-                vs {LABELS.salesTeam.toLowerCase()}
+                <span className="text-mck-sky">{formatPercent(data.summary.modelAccuracy)}</span> model accuracy across{' '}
+                {data.summary.totalSkus.toLocaleString()} SKUs
               </p>
               <p className="mt-1 font-body text-sm text-white/60">
-                {formatPercent(data.summary.modelAccuracy)} model accuracy ·{' '}
-                {formatPercent(data.summary.salesTeamAccuracy)} {LABELS.salesTeamBaseline} · {data.level}
+                wMAPE {data.summary.wmape.toFixed(2)} · {data.summary.forecastHorizon} horizons · volume weighted by value
               </p>
             </div>
             <div className="flex flex-wrap gap-3">
-              <HeroStat label="Over-forecast ↓" value={data.summary.overForecastReduction} />
-              <HeroStat label="Under-forecast ↓" value={data.summary.underForecastReduction} />
-              <HeroStat label="High-accuracy coverage" value={data.summary.salesHighAccuracyBucket} />
+              <HeroStat label="Over-forecast rate" value={data.summary.overForecastRate} />
+              <HeroStat label="Under-forecast rate" value={data.summary.underForecastRate} />
+              <HeroStat label="High-accuracy coverage" value={data.summary.highAccuracyCoverage} />
             </div>
           </div>
         </div>
@@ -71,36 +80,42 @@ export function OverviewPage() {
           label="Model Accuracy"
           value={data.summary.modelAccuracy}
           accent="sky"
-          comparison={{ label: LABELS.salesTeamAccuracy, value: data.summary.salesTeamAccuracy }}
-          delta={data.summary.accuracyImprovement}
-          deltaLabel={`Improvement vs ${LABELS.salesTeam.toLowerCase()} at quarter level`}
+          comparison={{ label: 'Target', value: data.summary.accuracyTarget }}
+          delta={data.summary.modelAccuracy - data.summary.accuracyTarget}
+          deltaLabel="Above 75% accuracy target at portfolio level"
           delay={0}
           selected={kpiFocus === 'accuracy'}
-          onSelect={() => setKpiFocus('accuracy')}
+          onSelect={() => {
+            setKpiFocus('accuracy')
+            navigate('accuracy', { metricStep: 'accuracy' })
+          }}
         />
         <KpiCard
-          label="Over-forecast Reduction"
-          value={data.summary.overForecastReduction}
+          label="Portfolio wMAPE"
+          value={Math.round((1 - data.summary.wmape) * 100)}
           accent="blue"
-          deltaLabel={`Model vs ${LABELS.salesTeam.toLowerCase()} over-forecast error`}
+          deltaLabel={`Raw wMAPE ${data.summary.wmape.toFixed(2)} · lower is better`}
           delay={0.05}
-          selected={kpiFocus === 'over'}
-          onSelect={() => setKpiFocus('over')}
+          selected={kpiFocus === 'wmape'}
+          onSelect={() => setKpiFocus('wmape')}
         />
         <KpiCard
-          label="Under-forecast Reduction"
-          value={data.summary.underForecastReduction}
+          label="Over-forecast Rate"
+          value={data.summary.overForecastRate}
           accent="coral"
-          deltaLabel={`Model vs ${LABELS.salesTeam.toLowerCase()} under-forecast error`}
+          deltaLabel="Share of forecasts above actual demand"
           delay={0.1}
-          selected={kpiFocus === 'under'}
-          onSelect={() => setKpiFocus('under')}
+          selected={kpiFocus === 'over'}
+          onSelect={() => {
+            setKpiFocus('over')
+            navigate('accuracy', { metricStep: 'bias' })
+          }}
         />
         <KpiCard
           label="High Accuracy Coverage"
-          value={data.summary.salesHighAccuracyBucket}
+          value={data.summary.highAccuracyCoverage}
           accent="success"
-          deltaLabel={`Sales in >60% bucket · ${LABELS.salesTeam} low bucket ${data.summary.salesLowAccuracyBucketSalesTeam}%`}
+          deltaLabel="Sales value in >60% accuracy bucket"
           delay={0.15}
           selected={kpiFocus === 'coverage'}
           onSelect={() => setKpiFocus('coverage')}
@@ -110,34 +125,39 @@ export function OverviewPage() {
       <section className="elevated-card p-4 lg:p-5">
         <div className="grid gap-4 md:grid-cols-3">
           <InsightBlock
-            title={`Territories outperforming ${LABELS.salesTeam.toLowerCase()}`}
-            value={`${data.summary.territoriesImproved}`}
-            detail={`Covering ${data.summary.territoriesImprovedSalesShare}% of sales with >25pt accuracy lift`}
+            title="Territories above target"
+            value={`${data.summary.territoriesAboveTarget}`}
+            detail={`${formatPercent(data.summary.territoriesAboveTargetShare, 0)} of territories meet ${formatPercent(data.summary.accuracyTarget)} accuracy`}
             accent="sky"
             selected={insightFocus === 'territories'}
             onSelect={() => {
               setInsightFocus('territories')
               handleTableViewChange('territory')
+              navigate('overview', { metricStep: 'territory' })
             }}
           />
           <InsightBlock
-            title={`Products outperforming ${LABELS.salesTeam.toLowerCase()}`}
-            value={`${data.summary.productsImproved}`}
-            detail={`Covering ${data.summary.productsImprovedSalesShare}% of sales with >25pt accuracy lift`}
+            title="SKUs above target"
+            value={`${data.summary.skusAboveTarget}`}
+            detail={`${formatPercent(data.summary.skusAboveTargetShare, 0)} of portfolio SKUs · click SKUs to deep dive`}
             accent="blue"
             selected={insightFocus === 'products'}
             onSelect={() => {
               setInsightFocus('products')
               handleTableViewChange('sku')
+              navigate('sku', { metricStep: 'sku' })
             }}
           />
           <InsightBlock
             title="Forecast granularity"
             value={data.level}
-            detail={`Horizon: ${data.summary.forecastHorizon} · ${data.summary.totalSkus.toLocaleString()} SKUs · ${data.summary.totalTerritories} territories`}
+            detail={`Horizon: ${data.summary.forecastHorizon} · ${data.summary.totalTerritories} territories`}
             accent="teal"
             selected={insightFocus === 'granularity'}
-            onSelect={() => setInsightFocus('granularity')}
+            onSelect={() => {
+              setInsightFocus('granularity')
+              navigate('forecast', { metricStep: 'horizon' })
+            }}
           />
         </div>
       </section>
@@ -145,7 +165,7 @@ export function OverviewPage() {
       <section className="grid gap-4 xl:grid-cols-3">
         <ChartCard
           title="Accuracy Snapshot"
-          subtitle={`Model vs ${LABELS.salesTeam.toLowerCase()} — interactive trend`}
+          subtitle="Monthly model accuracy trend"
           className="xl:col-span-2"
           glow
           action={
@@ -163,14 +183,27 @@ export function OverviewPage() {
         >
           <AccuracyTrendChart data={data.monthly} compact monthLimit={monthLimit} />
         </ChartCard>
-        <ChartCard title="Forecast Horizon" subtitle="Accuracy by N+1 / N+2 / N+3">
-          <HorizonChart data={forecastHorizons} />
+        <ChartCard
+          title="Forecast Horizon"
+          subtitle="Click a horizon for analysis"
+          action={
+            <button type="button" onClick={() => navigate('forecast', { metricStep: 'horizon' })} className="btn-ghost text-xs">
+              View all
+              <ArrowRight className="h-3.5 w-3.5" />
+            </button>
+          }
+        >
+          <HorizonChart
+            data={forecastHorizons}
+            target={data.summary.accuracyTarget}
+            onHorizonClick={() => navigate('forecast', { metricStep: 'horizon' })}
+          />
         </ChartCard>
       </section>
 
       <ChartCard
         title={tableView === 'territory' ? 'Territory Performance' : 'SKU Performance'}
-        subtitle={`Click a row to drill down · filter with search`}
+        subtitle="Click a row for quick stats · Deep dive for full SKU analysis"
         action={
           <TableControls
             tableView={tableView}
@@ -189,6 +222,8 @@ export function OverviewPage() {
           selectedId={selectedRowId}
           onSelect={setSelectedRowId}
           searchQuery={searchQuery}
+          onSkuNavigate={(skuId) => navigate('sku', { skuId, metricStep: 'sku' })}
+          onTerritoryNavigate={(name) => navigate('overview', { territory: name, metricStep: 'territory' })}
         />
 
         <AnimatePresence mode="wait">
@@ -208,8 +243,8 @@ export function OverviewPage() {
                   </p>
                   <p className="mt-1 text-xs text-theme-secondary">
                     {selectedTerritory
-                      ? `${formatCr(selectedTerritory.salesCr)} sales · ${formatPercent(selectedTerritory.salesShare, 1)} share`
-                      : `${selectedSku?.sku} · ${selectedSku?.segment} · ${selectedSku?.bestModel}`}
+                      ? `${formatCr(selectedTerritory.salesCr)} sales · ${formatPercent(selectedTerritory.salesShare, 1)} share · ${selectedTerritory.skuCount} SKUs`
+                      : `${selectedSku?.sku} · ${selectedSku?.category} · ${selectedSku?.bestModel}`}
                   </p>
                 </div>
                 <button
@@ -223,9 +258,23 @@ export function OverviewPage() {
               </div>
               <div className="grid gap-3 sm:grid-cols-3">
                 <DetailMetric label="Model accuracy" value={formatPercent((selectedTerritory ?? selectedSku)!.modelAccuracy)} accent="sky" />
-                <DetailMetric label={`${LABELS.salesTeam} accuracy`} value={formatPercent((selectedTerritory ?? selectedSku)!.salesTeamAccuracy)} accent="coral" />
-                <DetailMetric label="Improvement" value={`+${formatPercent((selectedTerritory ?? selectedSku)!.improvement)}`} accent="success" />
+                <DetailMetric label="wMAPE" value={(selectedTerritory ?? selectedSku)!.wmape.toFixed(2)} accent="blue" />
+                <DetailMetric
+                  label={selectedSku ? 'Best model' : 'SKUs tracked'}
+                  value={selectedSku ? selectedSku.bestModel : String(selectedTerritory!.skuCount)}
+                  accent="success"
+                />
               </div>
+              {selectedSku && (
+                <button
+                  type="button"
+                  onClick={() => navigate('sku', { skuId: selectedSku.sku, metricStep: 'sku' })}
+                  className="btn-ghost mt-4"
+                >
+                  Open SKU deep dive
+                  <ArrowRight className="h-4 w-4" />
+                </button>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
@@ -234,10 +283,10 @@ export function OverviewPage() {
   )
 }
 
-function DetailMetric({ label, value, accent }: { label: string; value: string; accent: 'sky' | 'coral' | 'success' }) {
+function DetailMetric({ label, value, accent }: { label: string; value: string; accent: 'sky' | 'blue' | 'success' }) {
   const colors = {
     sky: 'text-mck-sky',
-    coral: 'text-mck-coral',
+    blue: 'text-mck-blue',
     success: 'text-mck-success',
   }
   return (

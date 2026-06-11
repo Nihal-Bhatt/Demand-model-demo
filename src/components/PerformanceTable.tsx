@@ -1,6 +1,6 @@
-import { ArrowUpRight, MapPin, Package } from 'lucide-react'
+import { ArrowRight, MapPin, Package } from 'lucide-react'
+import { CategoryIllustration } from './agri/AgriIllustrations'
 import type { SkuPerformance, TerritoryPerformance } from '../data/mockData'
-import { LABELS } from '../data/mockData'
 import { cn, formatCr, formatPercent } from '../lib/utils'
 
 interface DataTableProps {
@@ -9,6 +9,8 @@ interface DataTableProps {
   view: 'territory' | 'sku'
   selectedId?: string | null
   onSelect?: (id: string | null) => void
+  onSkuNavigate?: (skuId: string) => void
+  onTerritoryNavigate?: (name: string) => void
   searchQuery?: string
 }
 
@@ -18,6 +20,8 @@ export function PerformanceTable({
   view,
   selectedId,
   onSelect,
+  onSkuNavigate,
+  onTerritoryNavigate,
   searchQuery = '',
 }: DataTableProps) {
   const query = searchQuery.trim().toLowerCase()
@@ -31,7 +35,8 @@ export function PerformanceTable({
       !query ||
       row.sku.toLowerCase().includes(query) ||
       row.product.toLowerCase().includes(query) ||
-      row.segment.toLowerCase().includes(query),
+      row.segment.toLowerCase().includes(query) ||
+      row.category.toLowerCase().includes(query),
   )
 
   if (view === 'territory') {
@@ -43,9 +48,10 @@ export function PerformanceTable({
               <th>Territory</th>
               <th>Sales</th>
               <th>Share</th>
-              <th>Model</th>
-              <th>{LABELS.salesTeam}</th>
-              <th>Δ Improvement</th>
+              <th>Accuracy</th>
+              <th>wMAPE</th>
+              <th>SKUs</th>
+              <th />
             </tr>
           </thead>
           <tbody>
@@ -67,12 +73,20 @@ export function PerformanceTable({
                   <td className="font-tabular">{formatCr(row.salesCr)}</td>
                   <td className="font-tabular">{formatPercent(row.salesShare, 1)}</td>
                   <td className="font-tabular font-semibold text-mck-sky">{formatPercent(row.modelAccuracy)}</td>
-                  <td className="font-tabular text-mck-coral">{formatPercent(row.salesTeamAccuracy)}</td>
+                  <td className="font-tabular text-theme-secondary">{row.wmape.toFixed(2)}</td>
+                  <td className="font-tabular">{row.skuCount}</td>
                   <td>
-                    <span className="inline-flex items-center gap-1 rounded-md bg-mck-success/12 px-2 py-1 font-tabular text-xs font-bold text-mck-success ring-1 ring-mck-success/25">
-                      <ArrowUpRight className="h-3.5 w-3.5" />
-                      +{formatPercent(row.improvement)}
-                    </span>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        onTerritoryNavigate?.(row.name)
+                      }}
+                      className="btn-ghost !px-2 !py-1 text-xs"
+                    >
+                      Explore
+                      <ArrowRight className="h-3 w-3" />
+                    </button>
                   </td>
                 </tr>
               )
@@ -91,13 +105,14 @@ export function PerformanceTable({
       <table className="data-table min-w-[720px]">
         <thead>
           <tr>
+            <th />
             <th>SKU</th>
             <th>Product</th>
+            <th>Category</th>
             <th>Segment</th>
-            <th>Best Model</th>
-            <th>Model</th>
-            <th>{LABELS.salesTeam}</th>
-            <th>Δ</th>
+            <th>Accuracy</th>
+            <th>wMAPE</th>
+            <th />
           </tr>
         </thead>
         <tbody>
@@ -110,6 +125,9 @@ export function PerformanceTable({
                 className={cn(selected && 'is-selected')}
                 onClick={() => onSelect?.(selected ? null : id)}
               >
+                <td className="w-10">
+                  <CategoryIllustration category={row.category} size={28} />
+                </td>
                 <td className="font-tabular text-xs text-theme-secondary">{row.sku}</td>
                 <td className="font-body font-medium text-theme-primary">
                   <span className="inline-flex items-center gap-2">
@@ -117,6 +135,7 @@ export function PerformanceTable({
                     {row.product}
                   </span>
                 </td>
+                <td className="text-xs text-theme-secondary">{row.category}</td>
                 <td>
                   <span
                     className={cn(
@@ -130,10 +149,21 @@ export function PerformanceTable({
                     {row.segment}
                   </span>
                 </td>
-                <td className="font-body text-theme-secondary">{row.bestModel}</td>
                 <td className="font-tabular font-semibold text-mck-sky">{formatPercent(row.modelAccuracy)}</td>
-                <td className="font-tabular text-mck-coral">{formatPercent(row.salesTeamAccuracy)}</td>
-                <td className="font-tabular font-bold text-mck-success">+{formatPercent(row.improvement)}</td>
+                <td className="font-tabular text-theme-secondary">{row.wmape.toFixed(2)}</td>
+                <td>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      onSkuNavigate?.(row.sku)
+                    }}
+                    className="btn-ghost !px-2 !py-1 text-xs"
+                  >
+                    Deep dive
+                    <ArrowRight className="h-3 w-3" />
+                  </button>
+                </td>
               </tr>
             )
           })}

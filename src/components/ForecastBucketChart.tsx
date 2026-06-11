@@ -2,22 +2,22 @@ import {
   Bar,
   BarChart,
   CartesianGrid,
-  Legend,
+  ReferenceLine,
   ResponsiveContainer,
   Tooltip,
   XAxis,
   YAxis,
 } from 'recharts'
 import { useChartTheme } from '../hooks/useChartTheme'
-import type { AccuracyBucket } from '../data/mockData'
-import { LABELS } from '../data/mockData'
+import type { AccuracyBucket, MonthlyMetric } from '../data/mockData'
 import { chartColors, mckColors } from '../theme/mckinsey'
 
 interface ForecastBucketChartProps {
   data: AccuracyBucket[]
+  target?: number
 }
 
-export function ForecastBucketChart({ data }: ForecastBucketChartProps) {
+export function ForecastBucketChart({ data, target = 75 }: ForecastBucketChartProps) {
   const theme = useChartTheme()
 
   return (
@@ -28,39 +28,30 @@ export function ForecastBucketChart({ data }: ForecastBucketChartProps) {
         <YAxis tick={{ fill: theme.tick, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
         <Tooltip
           contentStyle={{ borderRadius: 12, background: theme.tooltip.background, border: theme.tooltip.border, color: theme.tooltip.color, boxShadow: theme.tooltip.boxShadow }}
-          formatter={(value, name) => [`${value ?? 0}% sales`, name === 'modelShare' ? 'Model' : LABELS.salesTeam]}
+          formatter={(value) => [`${value ?? 0}% of sales value`, 'Model forecast']}
         />
-        <Legend
-          formatter={(value) => (value === 'modelShare' ? 'Model Forecast' : LABELS.salesTeamForecast)}
-          wrapperStyle={{ color: theme.legend }}
-        />
+        <ReferenceLine y={target} stroke={mckColors.success} strokeDasharray="4 4" label={{ value: `Target ${target}%`, fill: theme.tick, fontSize: 10 }} />
         <Bar dataKey="modelShare" name="modelShare" fill={chartColors.model} radius={[8, 8, 0, 0]} />
-        <Bar dataKey="salesTeamShare" name="salesTeamShare" fill={chartColors.rp} radius={[8, 8, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )
 }
 
-export function ErrorComparisonChart({ data }: { data: { month: string; modelError: number; salesTeamError: number }[] }) {
+export function ModelErrorChart({ data }: { data: MonthlyMetric[] }) {
   const theme = useChartTheme()
-  const filtered = data.filter((d) => d.modelError > 0 || d.salesTeamError > 0)
+  const filtered = data.filter((d) => d.modelError > 0).slice(-12)
 
   return (
     <ResponsiveContainer width="100%" height={260}>
-      <BarChart data={filtered.slice(-12)} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+      <BarChart data={filtered} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
         <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} vertical={false} />
         <XAxis dataKey="month" tick={{ fill: theme.tick, fontSize: 10 }} axisLine={false} tickLine={false} />
         <YAxis tick={{ fill: theme.tick, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${v}%`} />
         <Tooltip
           contentStyle={{ borderRadius: 12, background: theme.tooltip.background, border: theme.tooltip.border, color: theme.tooltip.color, boxShadow: theme.tooltip.boxShadow }}
-          formatter={(value, name) => [`${value ?? 0}%`, name === 'modelError' ? 'Model Error' : LABELS.salesTeamError]}
+          formatter={(value) => [`${value ?? 0}%`, 'Model error rate']}
         />
-        <Legend
-          formatter={(value) => (value === 'modelError' ? 'Model Error' : LABELS.salesTeamError)}
-          wrapperStyle={{ color: theme.legend }}
-        />
-        <Bar dataKey="modelError" fill={mckColors.blue} radius={[6, 6, 0, 0]} />
-        <Bar dataKey="salesTeamError" fill={mckColors.coral} radius={[6, 6, 0, 0]} />
+        <Bar dataKey="modelError" name="modelError" fill={mckColors.blue} radius={[6, 6, 0, 0]} />
       </BarChart>
     </ResponsiveContainer>
   )
