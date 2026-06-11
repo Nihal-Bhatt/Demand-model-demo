@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { AnimatePresence } from 'framer-motion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { Bell, Calendar, Download, Menu, PanelLeftOpen, Zap } from 'lucide-react'
 import { AmbientBackground } from './components/AmbientBackground'
 import { Sidebar } from './components/Sidebar'
@@ -153,8 +153,16 @@ function App() {
 
         <main id="main-content" className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7 max-lg:mx-auto">
           <AnimatePresence mode="wait">
-            <div key={activeSection}>{renderPage()}</div>
-          </AnimatePresence>
+        <motion.div
+          key={activeSection}
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -8 }}
+          transition={{ duration: 0.28, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {renderPage()}
+        </motion.div>
+      </AnimatePresence>
         </main>
       </div>
     </div>

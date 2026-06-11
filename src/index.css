@@ -1,10 +1,10 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: "Fira Code", ui-monospace, monospace;
-  --font-body: "Fira Sans", system-ui, sans-serif;
-  --font-sans: "Fira Sans", system-ui, sans-serif;
-  --font-mono: "Fira Code", ui-monospace, monospace;
+  --font-display: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-body: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-sans: "Plus Jakarta Sans", system-ui, sans-serif;
+  --font-mono: "Plus Jakarta Sans", system-ui, sans-serif;
 
   --color-mck-navy: #051c2c;
   --color-mck-navy-mid: #0e2e4a;
@@ -82,15 +82,15 @@
 
   h1, h2, h3, h4, h5, h6, .font-display {
     font-family: var(--font-display);
-    letter-spacing: -0.03em;
+    letter-spacing: -0.02em;
   }
 
   .font-body {
     font-family: var(--font-sans);
   }
 
-  .font-mono, [class*="font-mono"] {
-    font-family: var(--font-mono);
+  .font-mono, [class*="font-mono"], .font-tabular {
+    font-family: var(--font-sans);
     font-variant-numeric: tabular-nums;
   }
 
@@ -329,6 +329,39 @@
 
   .kpi-meter-fill {
     @apply h-full rounded-full transition-[width] duration-700 ease-out;
+  }
+
+  .data-table tbody tr.is-selected {
+    background: rgba(0, 169, 244, 0.1);
+    box-shadow: inset 3px 0 0 var(--color-mck-sky);
+  }
+
+  .data-table tbody tr.is-selected:hover {
+    background: rgba(0, 169, 244, 0.14);
+  }
+
+  .kpi-card-interactive {
+    @apply cursor-pointer transition-[box-shadow,border-color,background-color] duration-200;
+  }
+
+  .kpi-card-interactive.is-selected {
+    border-color: var(--border-glow);
+    box-shadow: var(--shadow-glow);
+  }
+
+  .insight-block-interactive {
+    @apply cursor-pointer transition-[box-shadow,border-color,background-color] duration-200;
+  }
+
+  .insight-block-interactive.is-selected {
+    border-color: rgba(0, 169, 244, 0.35);
+    box-shadow: var(--shadow-glow);
+    background: var(--surface-elevated-hover);
+  }
+
+  .detail-panel {
+    @apply overflow-hidden rounded-xl ring-1 ring-[color:var(--border-subtle)] p-4;
+    background: var(--surface-muted);
   }
 }
 

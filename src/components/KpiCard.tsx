@@ -11,6 +11,8 @@ interface KpiCardProps {
   accent?: 'sky' | 'blue' | 'coral' | 'success' | 'navy' | 'amber'
   comparison?: { label: string; value: number }
   delay?: number
+  selected?: boolean
+  onSelect?: () => void
 }
 
 const accentGlow = {
@@ -49,15 +51,37 @@ export function KpiCard({
   accent = 'sky',
   comparison,
   delay = 0,
+  selected,
+  onSelect,
 }: KpiCardProps) {
   const positive = delta !== undefined && delta >= 0
+  const interactive = Boolean(onSelect)
 
   return (
     <motion.article
       initial={{ opacity: 0, y: 16 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.35, delay, ease: [0.22, 1, 0.36, 1] }}
-      className={cn('elevated-card group p-4 lg:p-5', 'bg-gradient-to-br', accentGlow[accent])}
+      role={interactive ? 'button' : undefined}
+      tabIndex={interactive ? 0 : undefined}
+      onClick={onSelect}
+      onKeyDown={
+        interactive
+          ? (e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault()
+                onSelect?.()
+              }
+            }
+          : undefined
+      }
+      className={cn(
+        'elevated-card group p-4 lg:p-5',
+        'bg-gradient-to-br',
+        accentGlow[accent],
+        interactive && 'kpi-card-interactive',
+        selected && 'is-selected',
+      )}
     >
       <div className={cn('absolute left-0 top-0 h-[3px] w-full', barColors[accent])} />
 
@@ -66,7 +90,7 @@ export function KpiCard({
         {delta !== undefined && (
           <span
             className={cn(
-              'inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 font-mono text-[11px] font-bold ring-1',
+              'inline-flex shrink-0 items-center gap-1 rounded-md px-2 py-0.5 font-tabular text-[11px] font-bold ring-1',
               positive
                 ? 'bg-mck-success/12 text-mck-success ring-mck-success/25'
                 : 'bg-mck-coral/12 text-mck-coral ring-mck-coral/25',
@@ -78,7 +102,7 @@ export function KpiCard({
         )}
       </div>
 
-      <p className="relative mt-3 font-mono text-3xl font-bold tracking-tight text-theme-primary lg:text-4xl">
+      <p className="relative mt-3 font-tabular text-3xl font-bold tracking-tight text-theme-primary lg:text-4xl">
         {formatPercent(value)}
       </p>
 
@@ -98,7 +122,7 @@ export function KpiCard({
           style={{ background: 'var(--surface-muted)' }}
         >
           <span className="text-theme-secondary">{comparison.label}</span>
-          <span className="font-mono font-bold text-mck-coral">{formatPercent(comparison.value)}</span>
+          <span className="font-tabular font-bold text-mck-coral">{formatPercent(comparison.value)}</span>
         </div>
       )}
     </motion.article>
