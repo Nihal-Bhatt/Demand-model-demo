@@ -14,7 +14,8 @@ export const mckColors = {
   grey100: '#F5F7FA',
   white: '#FFFFFF',
   success: '#2E7D6F',
-  warning: '#D4A017',
+  amber: '#F59E0B',
+  amberSoft: '#FBBF24',
 } as const
 
 export const chartColors = {

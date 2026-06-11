@@ -74,7 +74,7 @@ export function PageShell({ children }: { children: ReactNode }) {
       animate={{ opacity: 1, y: 0 }}
       exit={{ opacity: 0, y: -8 }}
       transition={{ duration: 0.35 }}
-      className="space-y-6"
+      className="space-y-5"
     >
       {children}
     </motion.div>

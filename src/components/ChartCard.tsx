@@ -8,15 +8,23 @@ interface ChartCardProps {
   action?: ReactNode
   className?: string
   glow?: boolean
+  dense?: boolean
 }
 
-export function ChartCard({ title, subtitle, children, action, className, glow }: ChartCardProps) {
+export function ChartCard({ title, subtitle, children, action, className, glow, dense }: ChartCardProps) {
   return (
-    <section className={cn('elevated-card p-5 lg:p-6', glow && 'shadow-[var(--shadow-glow)]', className)}>
-      <div className="relative mb-5 flex flex-wrap items-start justify-between gap-3">
+    <section
+      className={cn(
+        'elevated-card',
+        dense ? 'p-4 lg:p-5' : 'p-5 lg:p-6',
+        glow && 'shadow-[var(--shadow-glow)]',
+        className,
+      )}
+    >
+      <div className="chart-card-header">
         <div>
-          <h3 className="font-display text-lg font-bold text-theme-primary">{title}</h3>
-          {subtitle && <p className="mt-1 font-body text-sm text-theme-secondary">{subtitle}</p>}
+          <h3 className="font-display text-base font-bold text-theme-primary lg:text-lg">{title}</h3>
+          {subtitle && <p className="mt-1 font-body text-xs text-theme-secondary lg:text-sm">{subtitle}</p>}
         </div>
         {action}
       </div>

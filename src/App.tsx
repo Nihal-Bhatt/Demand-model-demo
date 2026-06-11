@@ -48,6 +48,9 @@ function App() {
 
   return (
     <div className="relative min-h-screen">
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
       <AmbientBackground />
 
       <Sidebar
@@ -117,7 +120,9 @@ function App() {
                     {BRAND.tagline}
                   </span>
                   <span className="stat-pill text-mck-success">Backtest Active</span>
-                  <span className="stat-pill hidden sm:inline-flex">{sectionTitles[activeSection]}</span>
+                  <span className={cn('stat-pill stat-pill-active hidden sm:inline-flex')}>
+                    {sectionTitles[activeSection]}
+                  </span>
                 </div>
                 <h2 className="font-display text-2xl font-bold text-theme-primary lg:text-3xl">
                   {BRAND.name}{' '}
@@ -146,7 +151,7 @@ function App() {
           </div>
         </header>
 
-        <main className="mx-auto max-w-[1440px] px-4 py-6 sm:px-6 lg:px-8 lg:py-8 max-lg:mx-auto">
+        <main id="main-content" className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7 max-lg:mx-auto">
           <AnimatePresence mode="wait">
             <div key={activeSection}>{renderPage()}</div>
           </AnimatePresence>

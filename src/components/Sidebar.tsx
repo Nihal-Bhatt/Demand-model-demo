@@ -85,10 +85,10 @@ export function Sidebar({ active, collapsed, onNavigate, onToggleCollapse, mobil
               title={collapsed && !mobile ? label : undefined}
               onClick={() => onNavigate(id)}
               className={cn(
-                'group flex w-full cursor-pointer items-center rounded-xl text-sm font-semibold transition-all duration-200',
-                collapsed && !mobile ? 'justify-center px-0 py-3' : 'gap-3 px-4 py-3',
+                'group relative flex w-full cursor-pointer items-center rounded-lg text-sm font-semibold transition-[background-color,color,box-shadow] duration-200',
+                collapsed && !mobile ? 'justify-center px-0 py-3' : 'gap-3 px-3 py-2.5',
                 active === id
-                  ? 'bg-white/12 text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_0_20px_rgba(0,169,244,0.15)] ring-1 ring-mck-sky/30'
+                  ? 'bg-white/12 text-white shadow-[inset_3px_0_0_#00A9F4,0_0_16px_rgba(0,169,244,0.12)] ring-1 ring-mck-sky/35'
                   : 'text-white/55 hover:bg-white/8 hover:text-white',
               )}
             >

@@ -45,7 +45,7 @@ export function OverviewPage() {
         </div>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         <KpiCard
           label="Model Accuracy"
           value={data.summary.modelAccuracy}
@@ -78,7 +78,7 @@ export function OverviewPage() {
         />
       </section>
 
-      <section className="elevated-card p-5 lg:p-6">
+      <section className="elevated-card p-4 lg:p-5">
         <div className="grid gap-4 md:grid-cols-3">
           <InsightBlock
             title={`Territories outperforming ${LABELS.salesTeam.toLowerCase()}`}
@@ -101,7 +101,7 @@ export function OverviewPage() {
         </div>
       </section>
 
-      <section className="grid gap-6 xl:grid-cols-3">
+      <section className="grid gap-4 xl:grid-cols-3">
         <ChartCard
           title="Accuracy Snapshot"
           subtitle={`Model vs ${LABELS.salesTeam.toLowerCase()} — last 12 months`}
