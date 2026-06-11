@@ -1,12 +1,6 @@
 import { useMemo, useState } from 'react'
 import { motion } from 'framer-motion'
-import {
-  Activity,
-  BarChart3,
-  BrainCircuit,
-  PackageSearch,
-  TrendingUp,
-} from 'lucide-react'
+import { Activity, BarChart3, BrainCircuit, TrendingUp } from 'lucide-react'
 import { Area, AreaChart, ResponsiveContainer, Tooltip } from 'recharts'
 import { CategoryIllustration } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
@@ -15,7 +9,6 @@ import { IndiaTerritoryMap } from '../components/IndiaTerritoryMap'
 import { MetricRing } from '../components/MetricRing'
 import { AgriFloatField } from '../components/storytelling/AgriFloatField'
 import { EditorialHero } from '../components/storytelling/EditorialHero'
-import { EcosystemNavigator } from '../components/storytelling/EcosystemNavigator'
 import { StorySection } from '../components/storytelling/StorySection'
 import { PageShell } from '../components/shared'
 import { useDashboard } from '../context/DashboardContext'
@@ -29,13 +22,6 @@ import {
 import { useChartTheme } from '../hooks/useChartTheme'
 import { formatPercent } from '../lib/utils'
 import { chartColors } from '../theme/mckinsey'
-
-const ecosystemNodes = [
-  { id: 'metrics', label: 'Metrics', sublabel: 'Trends', icon: BarChart3, angle: -90 },
-  { id: 'sku', label: 'SKU', sublabel: 'Products', icon: PackageSearch, angle: -18 },
-  { id: 'drivers', label: 'Drivers', sublabel: 'SHAP', icon: BrainCircuit, angle: 54 },
-  { id: 'pipeline', label: 'Pipeline', sublabel: 'Engine', icon: Activity, angle: 126 },
-]
 
 export function OverviewPage() {
   const data = agriCoData
@@ -82,15 +68,6 @@ export function OverviewPage() {
           </div>
         </EditorialHero>
       </div>
-
-      <section className="elevated-card p-5 lg:p-6">
-        <EcosystemNavigator
-          centerValue={formatPercent(data.summary.modelAccuracy)}
-          centerLabel="Portfolio"
-          nodes={ecosystemNodes}
-          onNavigate={goTo}
-        />
-      </section>
 
       <StorySection
         id="chapter-territory"
