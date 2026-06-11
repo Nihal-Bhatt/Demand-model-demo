@@ -8,20 +8,16 @@ import { DashboardProvider } from './context/DashboardContext'
 import { agriCoData, BRAND, type NavSection } from './data/mockData'
 import { cn } from './lib/utils'
 import { OverviewPage } from './pages/OverviewPage'
-import { AccuracyTrendsPage } from './pages/AccuracyTrendsPage'
-import { ModelPerformancePage } from './pages/ModelPerformancePage'
-import { ForecastAnalysisPage } from './pages/ForecastAnalysisPage'
+import { MetricsPage } from './pages/MetricsPage'
+import { SkuExplorerPage } from './pages/SkuDeepDivePage'
+import { DriversPage } from './pages/ExplainabilityPage'
 import { PipelinePage } from './pages/PipelinePage'
-import { ExplainabilityPage } from './pages/ExplainabilityPage'
-import { SkuDeepDivePage } from './pages/SkuDeepDivePage'
 
 const sectionTitles: Record<NavSection, string> = {
   overview: 'Overview',
-  accuracy: 'Accuracy Trends',
-  performance: 'Model Performance',
-  forecast: 'Forecast Analysis',
-  sku: 'SKU Deep Dive',
-  explainability: 'Forecast Explainability',
+  metrics: 'Metrics & Models',
+  sku: 'SKU Explorer',
+  drivers: 'Forecast Drivers',
   pipeline: 'Pipeline Status',
 }
 
@@ -36,16 +32,12 @@ function AppContent() {
     switch (activeSection) {
       case 'overview':
         return <OverviewPage />
-      case 'accuracy':
-        return <AccuracyTrendsPage />
-      case 'performance':
-        return <ModelPerformancePage />
-      case 'forecast':
-        return <ForecastAnalysisPage />
+      case 'metrics':
+        return <MetricsPage />
       case 'sku':
-        return <SkuDeepDivePage />
-      case 'explainability':
-        return <ExplainabilityPage />
+        return <SkuExplorerPage />
+      case 'drivers':
+        return <DriversPage />
       case 'pipeline':
         return <PipelinePage />
     }
@@ -95,7 +87,7 @@ function AppContent() {
         >
           <header
             className="sticky top-0 z-20 border-b backdrop-blur-2xl transition-colors duration-500 max-lg:!pl-0"
-            style={{ background: 'var(--header-bg)', borderColor: 'var(--header-border)', marginLeft: undefined }}
+            style={{ background: 'var(--header-bg)', borderColor: 'var(--header-border)' }}
           >
             <div className="hero-glow-line" />
             <div className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
@@ -156,7 +148,7 @@ function AppContent() {
             </div>
           </header>
 
-          <main id="main-content" className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7 max-lg:mx-auto">
+          <main id="main-content" className="mx-auto max-w-[1440px] px-4 py-5 sm:px-6 lg:px-8 lg:py-7">
             <AnimatePresence mode="wait">
               <motion.div
                 key={activeSection}

@@ -1,352 +1,268 @@
 import { useMemo, useState } from 'react'
-import { AnimatePresence, motion } from 'framer-motion'
-import { ArrowRight, Filter, Search, X } from 'lucide-react'
-import { AgriPageHero } from '../components/agri/AgriIllustrations'
-import { AccuracyTrendChart } from '../components/AccuracyTrendChart'
+import { motion } from 'framer-motion'
+import {
+  Activity,
+  BarChart3,
+  BrainCircuit,
+  PackageSearch,
+  Sparkles,
+  TrendingUp,
+} from 'lucide-react'
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+} from 'recharts'
+import { CropRowIcon, FarmerIcon, SprayIcon } from '../components/agri/AgriIllustrations'
+import { CategoryIllustration } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
-import { HorizonChart } from '../components/ModelMixChart'
-import { KpiCard } from '../components/KpiCard'
-import { MetricFlowBar } from '../components/MetricFlowBar'
-import { PerformanceTable } from '../components/PerformanceTable'
-import { SegmentedControl } from '../components/SegmentedControl'
-import { HeroStat, InsightBlock, PageShell } from '../components/shared'
+import { FindingCard } from '../components/FindingCard'
+import { IndiaTerritoryMap } from '../components/IndiaTerritoryMap'
+import { MetricRing } from '../components/MetricRing'
+import { PageShell } from '../components/shared'
 import { useDashboard } from '../context/DashboardContext'
-import { agriCoData, forecastHorizons, segments } from '../data/mockData'
-import { cn, formatCr, formatPercent } from '../lib/utils'
-
-type KpiFocus = 'accuracy' | 'wmape' | 'over' | 'coverage'
-type ChartRange = '6' | '12' | 'all'
-type InsightFocus = 'territories' | 'products' | 'granularity'
+import {
+  agriCoData,
+  forecastHorizons,
+  pipelineSteps,
+  shapGlobalImportance,
+} from '../data/mockData'
+import { useChartTheme } from '../hooks/useChartTheme'
+import { formatPercent } from '../lib/utils'
+import { chartColors } from '../theme/mckinsey'
 
 export function OverviewPage() {
   const data = agriCoData
-  const { navigate } = useDashboard()
-  const [tableView, setTableView] = useState<'territory' | 'sku'>('territory')
-  const [segment, setSegment] = useState<(typeof segments)[number]>('All')
-  const [kpiFocus, setKpiFocus] = useState<KpiFocus>('accuracy')
-  const [chartRange, setChartRange] = useState<ChartRange>('12')
-  const [insightFocus, setInsightFocus] = useState<InsightFocus>('territories')
-  const [searchQuery, setSearchQuery] = useState('')
-  const [selectedRowId, setSelectedRowId] = useState<string | null>(null)
+  const theme = useChartTheme()
+  const { navigate, setSelectedTerritory } = useDashboard()
+  const [mapRegion, setMapRegion] = useState<string | null>(null)
 
-  const filteredSkus = useMemo(
-    () => (segment === 'All' ? data.skus : data.skus.filter((s) => s.segment === segment)),
-    [data.skus, segment],
+  const sparkData = useMemo(
+    () => data.monthly.filter((m) => m.modelAccuracy > 0).slice(-8),
+    [data.monthly],
   )
 
-  const monthLimit = chartRange === '6' ? 6 : chartRange === '12' ? 12 : undefined
-
-  const selectedTerritory = data.territories.find((t) => t.name === selectedRowId)
-  const selectedSku = filteredSkus.find((s) => s.sku === selectedRowId)
-
-  const handleTableViewChange = (view: 'territory' | 'sku') => {
-    setTableView(view)
-    setSelectedRowId(null)
-  }
+  const topSkus = useMemo(() => [...data.skus].sort((a, b) => b.modelAccuracy - a.modelAccuracy).slice(0, 4), [data.skus])
+  const topDrivers = shapGlobalImportance.slice(0, 3)
+  const pipelineRunning = pipelineSteps.find((s) => s.status === 'running')
+  const horizonSummary = forecastHorizons.map((h) => `${h.horizon} ${h.modelAccuracy}%`).join(' · ')
 
   return (
     <PageShell>
-      <MetricFlowBar />
-
-      <AgriPageHero
-        title="Model forecast accuracy at a glance"
-        subtitle={`${formatPercent(data.summary.modelAccuracy)} portfolio accuracy · target ${formatPercent(data.summary.accuracyTarget)} · ${data.level}`}
-      />
-
-      <section className="elevated-card overflow-hidden p-0">
-        <div className="gradient-mck-glow px-6 py-5 lg:px-8 lg:py-6">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <p className="font-display text-xs font-bold uppercase tracking-[0.2em] text-mck-sky/80">Headline Insight</p>
-              <p className="mt-2 font-display text-xl font-bold text-white lg:text-2xl">
-                <span className="text-mck-sky">{formatPercent(data.summary.modelAccuracy)}</span> model accuracy across{' '}
-                {data.summary.totalSkus.toLocaleString()} SKUs
-              </p>
-              <p className="mt-1 font-body text-sm text-white/60">
-                wMAPE {data.summary.wmape.toFixed(2)} · {data.summary.forecastHorizon} horizons · volume weighted by value
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <HeroStat label="Over-forecast rate" value={data.summary.overForecastRate} />
-              <HeroStat label="Under-forecast rate" value={data.summary.underForecastRate} />
-              <HeroStat label="High-accuracy coverage" value={data.summary.highAccuracyCoverage} />
-            </div>
-          </div>
+      {/* Hero summary strip */}
+      <section className="relative overflow-hidden rounded-2xl gradient-mck-glow px-6 py-8 lg:px-10">
+        <div className="pointer-events-none absolute -right-6 top-4 opacity-20">
+          <CropRowIcon size={140} />
         </div>
-      </section>
-
-      <section className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        <KpiCard
-          label="Model Accuracy"
-          value={data.summary.modelAccuracy}
-          accent="sky"
-          comparison={{ label: 'Target', value: data.summary.accuracyTarget }}
-          delta={data.summary.modelAccuracy - data.summary.accuracyTarget}
-          deltaLabel="Above 75% accuracy target at portfolio level"
-          delay={0}
-          selected={kpiFocus === 'accuracy'}
-          onSelect={() => {
-            setKpiFocus('accuracy')
-            navigate('accuracy', { metricStep: 'accuracy' })
-          }}
-        />
-        <KpiCard
-          label="Portfolio wMAPE"
-          value={Math.round((1 - data.summary.wmape) * 100)}
-          accent="blue"
-          deltaLabel={`Raw wMAPE ${data.summary.wmape.toFixed(2)} · lower is better`}
-          delay={0.05}
-          selected={kpiFocus === 'wmape'}
-          onSelect={() => setKpiFocus('wmape')}
-        />
-        <KpiCard
-          label="Over-forecast Rate"
-          value={data.summary.overForecastRate}
-          accent="coral"
-          deltaLabel="Share of forecasts above actual demand"
-          delay={0.1}
-          selected={kpiFocus === 'over'}
-          onSelect={() => {
-            setKpiFocus('over')
-            navigate('accuracy', { metricStep: 'bias' })
-          }}
-        />
-        <KpiCard
-          label="High Accuracy Coverage"
-          value={data.summary.highAccuracyCoverage}
-          accent="success"
-          deltaLabel="Sales value in >60% accuracy bucket"
-          delay={0.15}
-          selected={kpiFocus === 'coverage'}
-          onSelect={() => setKpiFocus('coverage')}
-        />
-      </section>
-
-      <section className="elevated-card p-4 lg:p-5">
-        <div className="grid gap-4 md:grid-cols-3">
-          <InsightBlock
-            title="Territories above target"
-            value={`${data.summary.territoriesAboveTarget}`}
-            detail={`${formatPercent(data.summary.territoriesAboveTargetShare, 0)} of territories meet ${formatPercent(data.summary.accuracyTarget)} accuracy`}
-            accent="sky"
-            selected={insightFocus === 'territories'}
-            onSelect={() => {
-              setInsightFocus('territories')
-              handleTableViewChange('territory')
-              navigate('overview', { metricStep: 'territory' })
-            }}
-          />
-          <InsightBlock
-            title="SKUs above target"
-            value={`${data.summary.skusAboveTarget}`}
-            detail={`${formatPercent(data.summary.skusAboveTargetShare, 0)} of portfolio SKUs · click SKUs to deep dive`}
-            accent="blue"
-            selected={insightFocus === 'products'}
-            onSelect={() => {
-              setInsightFocus('products')
-              handleTableViewChange('sku')
-              navigate('sku', { metricStep: 'sku' })
-            }}
-          />
-          <InsightBlock
-            title="Forecast granularity"
-            value={data.level}
-            detail={`Horizon: ${data.summary.forecastHorizon} · ${data.summary.totalTerritories} territories`}
-            accent="teal"
-            selected={insightFocus === 'granularity'}
-            onSelect={() => {
-              setInsightFocus('granularity')
-              navigate('forecast', { metricStep: 'horizon' })
-            }}
-          />
+        <div className="pointer-events-none absolute right-32 top-8 opacity-15">
+          <FarmerIcon size={90} />
         </div>
-      </section>
+        <div className="pointer-events-none absolute bottom-2 left-8 opacity-15">
+          <SprayIcon size={64} />
+        </div>
 
-      <section className="grid gap-4 xl:grid-cols-3">
-        <ChartCard
-          title="Accuracy Snapshot"
-          subtitle="Monthly model accuracy trend"
-          className="xl:col-span-2"
-          glow
-          action={
-            <SegmentedControl
-              size="sm"
-              value={chartRange}
-              onChange={setChartRange}
-              options={[
-                { value: '6', label: '6M' },
-                { value: '12', label: '12M' },
-                { value: 'all', label: 'All' },
-              ]}
-            />
-          }
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
+          className="relative max-w-2xl"
         >
-          <AccuracyTrendChart data={data.monthly} compact monthLimit={monthLimit} />
-        </ChartCard>
+          <p className="font-display text-xs font-bold uppercase tracking-[0.22em] text-mck-sky/80">Portfolio Summary</p>
+          <h1 className="mt-2 font-display text-3xl font-bold text-white lg:text-4xl">
+            Model accuracy at{' '}
+            <span className="text-gradient-mck">{formatPercent(data.summary.modelAccuracy)}</span>
+          </h1>
+          <p className="mt-3 font-body text-sm leading-relaxed text-white/60">
+            {data.summary.totalSkus.toLocaleString()} SKUs · {data.summary.totalTerritories} territories ·{' '}
+            {data.period} backtest · target {formatPercent(data.summary.accuracyTarget)}
+          </p>
+        </motion.div>
+
+        <div className="relative mt-8 grid grid-cols-2 gap-3 sm:grid-cols-4 lg:gap-4">
+          <MetricRing
+            label="Accuracy"
+            value={data.summary.modelAccuracy}
+            accent="sky"
+            sublabel={`Target ${formatPercent(data.summary.accuracyTarget)}`}
+            onClick={() => navigate('metrics')}
+            delay={0.1}
+          />
+          <MetricRing
+            label="wMAPE"
+            value={Math.round((1 - data.summary.wmape) * 100)}
+            accent="blue"
+            sublabel={`Raw ${data.summary.wmape.toFixed(2)}`}
+            onClick={() => navigate('metrics')}
+            delay={0.15}
+          />
+          <MetricRing
+            label="Coverage"
+            value={data.summary.highAccuracyCoverage}
+            accent="success"
+            sublabel="Sales in >60% bucket"
+            onClick={() => navigate('metrics')}
+            delay={0.2}
+          />
+          <MetricRing
+            label="Bias"
+            value={data.summary.overForecastRate}
+            accent="coral"
+            sublabel={`Under ${data.summary.underForecastRate}%`}
+            onClick={() => navigate('metrics')}
+            delay={0.25}
+          />
+        </div>
+      </section>
+
+      {/* Map + findings */}
+      <section className="grid gap-4 lg:grid-cols-5">
         <ChartCard
-          title="Forecast Horizon"
-          subtitle="Click a horizon for analysis"
+          title="India Territory Heatmap"
+          subtitle="Click a region to drill into territories"
+          className="lg:col-span-3"
+          glow
+        >
+          <IndiaTerritoryMap
+            selectedRegionId={mapRegion}
+            onRegionSelect={(id) => setMapRegion(id)}
+            onTerritoryNavigate={(name) => {
+              setSelectedTerritory(name)
+              navigate('sku', { territory: name })
+            }}
+            onViewMetrics={() => navigate('metrics')}
+          />
+        </ChartCard>
+
+        <div className="flex flex-col gap-3 lg:col-span-2">
+          <p className="font-display text-xs font-bold uppercase tracking-wider text-theme-secondary">Key Findings</p>
+          <FindingCard
+            title="Accuracy Trend"
+            metric={`${sparkData[sparkData.length - 1]?.modelAccuracy ?? 0}% latest`}
+            detail={`+${(sparkData[sparkData.length - 1]?.modelAccuracy ?? 0) - (sparkData[0]?.modelAccuracy ?? 0)} pts over 8 months · view full bias & error analysis`}
+            accent="sky"
+            icon={<TrendingUp className="h-5 w-5 text-mck-sky" />}
+            onClick={() => navigate('metrics')}
+            delay={0.1}
+          />
+          <FindingCard
+            title="Horizon Performance"
+            metric={horizonSummary}
+            detail="N+1 strongest · N+3 decays as expected · model mix & leaderboard in Metrics"
+            accent="blue"
+            icon={<BarChart3 className="h-5 w-5 text-mck-blue" />}
+            onClick={() => navigate('metrics')}
+            delay={0.15}
+          />
+          <FindingCard
+            title="Top Forecast Drivers"
+            metric={topDrivers[0]?.feature.replace(/_/g, ' ') ?? '—'}
+            detail={`${(topDrivers[0]?.shap ?? 0) * 100}% mean |SHAP| · rainfall & seasonality follow · full SHAP in Drivers`}
+            accent="success"
+            icon={<BrainCircuit className="h-5 w-5 text-mck-success" />}
+            onClick={() => navigate('drivers')}
+            delay={0.2}
+          />
+          <FindingCard
+            title="Pipeline"
+            metric={pipelineRunning?.name ?? 'Idle'}
+            detail={`${pipelineSteps.filter((s) => s.status === 'complete').length}/${pipelineSteps.length} steps complete · RUN-2847 in progress`}
+            accent="amber"
+            icon={<Activity className="h-5 w-5 text-mck-amber" />}
+            onClick={() => navigate('pipeline')}
+            delay={0.25}
+          />
+        </div>
+      </section>
+
+      {/* Sparkline + top SKUs */}
+      <section className="grid gap-4 lg:grid-cols-2">
+        <ChartCard title="Accuracy Pulse" subtitle="Last 8 months · tap for detailed metrics">
+          <button type="button" onClick={() => navigate('metrics')} className="block w-full cursor-pointer">
+            <ResponsiveContainer width="100%" height={140}>
+              <AreaChart data={sparkData}>
+                <defs>
+                  <linearGradient id="pulseFill" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="0%" stopColor={chartColors.model} stopOpacity={0.35} />
+                    <stop offset="100%" stopColor={chartColors.model} stopOpacity={0} />
+                  </linearGradient>
+                </defs>
+                <Tooltip
+                  contentStyle={{
+                    borderRadius: 10,
+                    background: theme.tooltip.background,
+                    border: theme.tooltip.border,
+                    fontFamily: 'Plus Jakarta Sans, system-ui, sans-serif',
+                    fontSize: 12,
+                  }}
+                  formatter={(v) => [`${v}%`, 'Accuracy']}
+                />
+                <Area type="monotone" dataKey="modelAccuracy" stroke={chartColors.model} fill="url(#pulseFill)" strokeWidth={2.5} dot={false} />
+              </AreaChart>
+            </ResponsiveContainer>
+          </button>
+        </ChartCard>
+
+        <ChartCard
+          title="Top SKUs by Accuracy"
+          subtitle="Click any product for deep dive"
           action={
-            <button type="button" onClick={() => navigate('forecast', { metricStep: 'horizon' })} className="btn-ghost text-xs">
-              View all
-              <ArrowRight className="h-3.5 w-3.5" />
+            <button type="button" onClick={() => navigate('sku')} className="btn-ghost text-xs">
+              All SKUs
             </button>
           }
         >
-          <HorizonChart
-            data={forecastHorizons}
-            target={data.summary.accuracyTarget}
-            onHorizonClick={() => navigate('forecast', { metricStep: 'horizon' })}
-          />
+          <div className="grid gap-2 sm:grid-cols-2">
+            {topSkus.map((sku, i) => (
+              <motion.button
+                key={sku.sku}
+                type="button"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 + i * 0.05 }}
+                onClick={() => navigate('sku', { skuId: sku.sku })}
+                className="flex cursor-pointer items-center gap-3 rounded-xl p-3 text-left ring-1 ring-[color:var(--border-subtle)] transition-all hover:-translate-y-0.5 hover:shadow-[var(--shadow-glow)] hover:ring-mck-sky/30"
+                style={{ background: 'var(--surface-inset)' }}
+              >
+                <CategoryIllustration category={sku.category} size={32} />
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-display text-sm font-bold text-theme-primary">{sku.product}</p>
+                  <p className="text-[10px] text-theme-secondary">{sku.sku} · {sku.bestModel}</p>
+                </div>
+                <span className="font-tabular text-sm font-bold text-mck-sky">{formatPercent(sku.modelAccuracy)}</span>
+              </motion.button>
+            ))}
+          </div>
         </ChartCard>
       </section>
 
-      <ChartCard
-        title={tableView === 'territory' ? 'Territory Performance' : 'SKU Performance'}
-        subtitle="Click a row for quick stats · Deep dive for full SKU analysis"
-        action={
-          <TableControls
-            tableView={tableView}
-            setTableView={handleTableViewChange}
-            segment={segment}
-            setSegment={setSegment}
-            searchQuery={searchQuery}
-            setSearchQuery={setSearchQuery}
-          />
-        }
-      >
-        <PerformanceTable
-          territories={data.territories}
-          skus={filteredSkus}
-          view={tableView}
-          selectedId={selectedRowId}
-          onSelect={setSelectedRowId}
-          searchQuery={searchQuery}
-          onSkuNavigate={(skuId) => navigate('sku', { skuId, metricStep: 'sku' })}
-          onTerritoryNavigate={(name) => navigate('overview', { territory: name, metricStep: 'territory' })}
-        />
-
-        <AnimatePresence mode="wait">
-          {(selectedTerritory || selectedSku) && (
-            <motion.div
-              key={selectedRowId}
-              initial={{ opacity: 0, height: 0, marginTop: 0 }}
-              animate={{ opacity: 1, height: 'auto', marginTop: 16 }}
-              exit={{ opacity: 0, height: 0, marginTop: 0 }}
-              transition={{ duration: 0.25, ease: [0.22, 1, 0.36, 1] }}
-              className="detail-panel"
-            >
-              <div className="mb-3 flex items-start justify-between gap-3">
-                <div>
-                  <p className="font-display text-sm font-bold text-theme-primary">
-                    {selectedTerritory?.name ?? selectedSku?.product}
-                  </p>
-                  <p className="mt-1 text-xs text-theme-secondary">
-                    {selectedTerritory
-                      ? `${formatCr(selectedTerritory.salesCr)} sales · ${formatPercent(selectedTerritory.salesShare, 1)} share · ${selectedTerritory.skuCount} SKUs`
-                      : `${selectedSku?.sku} · ${selectedSku?.category} · ${selectedSku?.bestModel}`}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setSelectedRowId(null)}
-                  className="btn-ghost !px-2 !py-2"
-                  aria-label="Close detail panel"
-                >
-                  <X className="h-4 w-4" />
-                </button>
-              </div>
-              <div className="grid gap-3 sm:grid-cols-3">
-                <DetailMetric label="Model accuracy" value={formatPercent((selectedTerritory ?? selectedSku)!.modelAccuracy)} accent="sky" />
-                <DetailMetric label="wMAPE" value={(selectedTerritory ?? selectedSku)!.wmape.toFixed(2)} accent="blue" />
-                <DetailMetric
-                  label={selectedSku ? 'Best model' : 'SKUs tracked'}
-                  value={selectedSku ? selectedSku.bestModel : String(selectedTerritory!.skuCount)}
-                  accent="success"
-                />
-              </div>
-              {selectedSku && (
-                <button
-                  type="button"
-                  onClick={() => navigate('sku', { skuId: selectedSku.sku, metricStep: 'sku' })}
-                  className="btn-ghost mt-4"
-                >
-                  Open SKU deep dive
-                  <ArrowRight className="h-4 w-4" />
-                </button>
-              )}
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </ChartCard>
-    </PageShell>
-  )
-}
-
-function DetailMetric({ label, value, accent }: { label: string; value: string; accent: 'sky' | 'blue' | 'success' }) {
-  const colors = {
-    sky: 'text-mck-sky',
-    blue: 'text-mck-blue',
-    success: 'text-mck-success',
-  }
-  return (
-    <div className="rounded-lg px-3 py-2 ring-1 ring-[color:var(--border-subtle)]" style={{ background: 'var(--surface-inset)' }}>
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-theme-secondary">{label}</p>
-      <p className={cn('mt-1 font-tabular text-xl font-bold', colors[accent])}>{value}</p>
-    </div>
-  )
-}
-
-function TableControls({
-  tableView,
-  setTableView,
-  segment,
-  setSegment,
-  searchQuery,
-  setSearchQuery,
-}: {
-  tableView: 'territory' | 'sku'
-  setTableView: (v: 'territory' | 'sku') => void
-  segment: (typeof segments)[number]
-  setSegment: (v: (typeof segments)[number]) => void
-  searchQuery: string
-  setSearchQuery: (v: string) => void
-}) {
-  return (
-    <div className="flex flex-wrap items-center gap-2">
-      <SegmentedControl
-        size="sm"
-        value={tableView}
-        onChange={setTableView}
-        options={[
-          { value: 'territory', label: 'Territory' },
-          { value: 'sku', label: 'SKU' },
-        ]}
-      />
-      {tableView === 'sku' && (
-        <div className="btn-ghost !py-1.5 !text-xs">
-          <Filter className="h-3.5 w-3.5" />
-          <select
-            value={segment}
-            onChange={(e) => setSegment(e.target.value as (typeof segments)[number])}
-            className="cursor-pointer bg-transparent font-bold outline-none"
+      {/* Quick nav tiles */}
+      <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+        {[
+          { id: 'metrics' as const, label: 'Metrics & Models', desc: 'Trends, bias, horizons, leaderboard', icon: BarChart3 },
+          { id: 'sku' as const, label: 'SKU Explorer', desc: 'Product deep dives & review queue', icon: PackageSearch },
+          { id: 'drivers' as const, label: 'Forecast Drivers', desc: 'SHAP, features, external data', icon: Sparkles },
+          { id: 'pipeline' as const, label: 'Pipeline', desc: 'Thunderbird run status', icon: Activity },
+        ].map(({ id, label, desc, icon: Icon }, i) => (
+          <motion.button
+            key={id}
+            type="button"
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ delay: 0.3 + i * 0.05 }}
+            onClick={() => navigate(id)}
+            className="elevated-card elevated-card-interactive flex items-start gap-3 p-5 text-left"
           >
-            {segments.map((s) => (
-              <option key={s} value={s}>{s}</option>
-            ))}
-          </select>
-        </div>
-      )}
-      <label className="btn-ghost hidden !py-1.5 !text-xs sm:inline-flex">
-        <Search className="h-3.5 w-3.5" />
-        <input
-          type="search"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search..."
-          className="w-28 bg-transparent font-semibold outline-none placeholder:text-theme-muted"
-        />
-      </label>
-    </div>
+            <div className="rounded-xl bg-mck-sky/15 p-2.5 ring-1 ring-mck-sky/25">
+              <Icon className="h-5 w-5 text-mck-sky" />
+            </div>
+            <div>
+              <p className="font-display font-bold text-theme-primary">{label}</p>
+              <p className="mt-1 text-xs text-theme-secondary">{desc}</p>
+            </div>
+          </motion.button>
+        ))}
+      </section>
+    </PageShell>
   )
 }

@@ -13,8 +13,7 @@ import {
 import { CloudRain, Database, Layers, Sparkles, TrendingUp, Zap } from 'lucide-react'
 import { AgriPageHero } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
-import { MetricFlowBar } from '../components/MetricFlowBar'
-import { PageShell } from '../components/shared'
+import { PageHeader, PageShell } from '../components/shared'
 import { useDashboard } from '../context/DashboardContext'
 import {
   engineeredFeatures,
@@ -33,11 +32,12 @@ const impactColors = {
   Low: 'bg-white/10 text-theme-secondary ring-[color:var(--border-subtle)]',
 }
 
-export function ExplainabilityPage() {
+export function DriversPage() {
   const theme = useChartTheme()
   const { navigate } = useDashboard()
   const [selectedSku, setSelectedSku] = useState(explainabilitySkus[0])
   const example = shapLocalExample
+  const skuId = selectedSku.split(' — ')[0]
 
   const waterfallData = example.contributions.map((c) => ({
     name: c.feature.replace(/_/g, ' '),
@@ -45,15 +45,16 @@ export function ExplainabilityPage() {
     value: c.value,
   }))
 
-  const skuId = selectedSku.split(' — ')[0]
-
   return (
     <PageShell>
-      <MetricFlowBar compact />
+      <PageHeader
+        title="Forecast Drivers"
+        subtitle="External indicators, feature engineering, and SHAP explainability — not shown elsewhere"
+      />
 
       <AgriPageHero
-        title="Forecast drivers & explainability"
-        subtitle="Step 6 of metric flow · weather, crop calendar, field app signals — why the model predicts demand"
+        title="Why the model predicts demand"
+        subtitle="Weather, crop calendar, field app signals, and engineered features drive forecasts"
       />
 
       <section className="grid gap-4 sm:grid-cols-4">
@@ -74,14 +75,15 @@ export function ExplainabilityPage() {
         ))}
       </section>
 
-      <ChartCard title="External Indicators & Data Sources" subtitle="Drivers fed into feature engineering pipeline">
+      <ChartCard title="External Indicators & Data Sources" subtitle="Click to open related SKU">
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {externalDrivers.map((driver) => (
-            <div
+            <button
               key={driver.id}
-              className="group cursor-pointer rounded-xl p-4 ring-1 ring-[color:var(--border-subtle)] transition-all duration-200 hover:ring-mck-sky/40 hover:shadow-[var(--shadow-glow)]"
+              type="button"
+              onClick={() => navigate('sku', { skuId: 'AC-1042' })}
+              className="group cursor-pointer rounded-xl p-4 text-left ring-1 ring-[color:var(--border-subtle)] transition-all duration-200 hover:-translate-y-0.5 hover:ring-mck-sky/40 hover:shadow-[var(--shadow-glow)]"
               style={{ background: 'var(--surface-muted)' }}
-              onClick={() => navigate('sku', { skuId: 'AC-1042', metricStep: 'explainability' })}
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex items-center gap-2">
@@ -102,8 +104,7 @@ export function ExplainabilityPage() {
                 <span className="stat-pill">{driver.features} features</span>
                 <span className={cn('stat-pill', driver.status === 'Active' && 'text-mck-success')}>{driver.status}</span>
               </div>
-              <p className="mt-2 font-tabular text-[10px] text-theme-muted">Source: {driver.source}</p>
-            </div>
+            </button>
           ))}
         </div>
       </ChartCard>
@@ -112,28 +113,17 @@ export function ExplainabilityPage() {
         <ChartCard title="Feature Engineering" subtitle="Groups retained after correlation & impact filtering">
           <div className="space-y-3">
             {engineeredFeatures.map((group) => (
-              <div
-                key={group.group}
-                className="rounded-xl p-4 ring-1 ring-[color:var(--border-subtle)]"
-                style={{ background: 'var(--surface-inset)' }}
-              >
+              <div key={group.group} className="rounded-xl p-4 ring-1 ring-[color:var(--border-subtle)]" style={{ background: 'var(--surface-inset)' }}>
                 <div className="flex items-center justify-between">
                   <p className="font-display text-sm font-bold text-theme-primary">{group.group}</p>
-                  <span className="font-tabular text-xs text-mck-sky">
-                    {group.retained}/{group.count} retained
-                  </span>
+                  <span className="font-tabular text-xs text-mck-sky">{group.retained}/{group.count} retained</span>
                 </div>
                 <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-[color:var(--border-subtle)]">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-mck-sky to-mck-blue"
-                    style={{ width: `${(group.retained / group.count) * 100}%` }}
-                  />
+                  <div className="h-full rounded-full bg-gradient-to-r from-mck-sky to-mck-blue" style={{ width: `${(group.retained / group.count) * 100}%` }} />
                 </div>
                 <div className="mt-3 flex flex-wrap gap-1.5">
                   {group.features.map((f) => (
-                    <code key={f} className="rounded-md bg-mck-navy/10 px-2 py-0.5 font-tabular text-[10px] text-mck-sky">
-                      {f}
-                    </code>
+                    <code key={f} className="rounded-md bg-mck-navy/10 px-2 py-0.5 font-tabular text-[10px] text-mck-sky">{f}</code>
                   ))}
                 </div>
               </div>
@@ -141,16 +131,13 @@ export function ExplainabilityPage() {
           </div>
         </ChartCard>
 
-        <ChartCard title="Global SHAP Importance" subtitle="Mean |SHAP| across portfolio — model-agnostic">
+        <ChartCard title="Global SHAP Importance" subtitle="Mean |SHAP| across portfolio">
           <ResponsiveContainer width="100%" height={340}>
             <BarChart data={shapGlobalImportance} layout="vertical" margin={{ top: 4, right: 16, left: 8, bottom: 4 }}>
               <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} horizontal={false} />
               <XAxis type="number" tick={{ fill: theme.tick, fontSize: 11 }} axisLine={false} tickLine={false} domain={[-0.1, 0.3]} />
               <YAxis type="category" dataKey="feature" width={130} tick={{ fill: theme.tick, fontSize: 10 }} axisLine={false} tickLine={false} tickFormatter={(v) => v.replace(/_/g, ' ')} />
-              <Tooltip
-                contentStyle={{ borderRadius: 12, background: theme.tooltip.background, border: theme.tooltip.border, color: theme.tooltip.color }}
-                formatter={(v) => [`${((v as number) * 100).toFixed(1)}%`, 'Mean |SHAP|']}
-              />
+              <Tooltip contentStyle={{ borderRadius: 12, background: theme.tooltip.background, border: theme.tooltip.border, color: theme.tooltip.color }} formatter={(v) => [`${((v as number) * 100).toFixed(1)}%`, 'Mean |SHAP|']} />
               <ReferenceLine x={0} stroke={theme.grid} />
               <Bar dataKey="shap" radius={[0, 4, 4, 0]}>
                 {shapGlobalImportance.map((entry, i) => (
@@ -164,13 +151,9 @@ export function ExplainabilityPage() {
 
       <ChartCard
         title="Local SHAP Explanation"
-        subtitle="Per-forecast breakdown — how features push prediction from base value"
+        subtitle="Per-forecast feature contributions"
         action={
-          <select
-            value={selectedSku}
-            onChange={(e) => setSelectedSku(e.target.value)}
-            className="btn-ghost cursor-pointer font-display text-xs font-semibold"
-          >
+          <select value={selectedSku} onChange={(e) => setSelectedSku(e.target.value)} className="btn-ghost cursor-pointer font-display text-xs font-semibold">
             {explainabilitySkus.map((s) => (
               <option key={s} value={s}>{s}</option>
             ))}
@@ -189,13 +172,7 @@ export function ExplainabilityPage() {
             <CartesianGrid strokeDasharray="3 3" stroke={theme.grid} vertical={false} />
             <XAxis dataKey="name" tick={{ fill: theme.tick, fontSize: 9 }} axisLine={false} tickLine={false} angle={-25} textAnchor="end" height={60} />
             <YAxis tick={{ fill: theme.tick, fontSize: 11 }} axisLine={false} tickLine={false} tickFormatter={(v) => `${(v * 100).toFixed(0)}%`} />
-            <Tooltip
-              contentStyle={{ borderRadius: 12, background: theme.tooltip.background, border: theme.tooltip.border, color: theme.tooltip.color }}
-              formatter={(_v, _n, item) => {
-                const payload = item?.payload as { value: number; shap: number }
-                return [`SHAP ${(payload.shap * 100).toFixed(1)}% · Δ ${payload.value > 0 ? '+' : ''}${payload.value.toLocaleString()} units`, 'Contribution']
-              }}
-            />
+            <Tooltip contentStyle={{ borderRadius: 12, background: theme.tooltip.background, border: theme.tooltip.border, color: theme.tooltip.color }} />
             <ReferenceLine y={0} stroke={theme.grid} />
             <Bar dataKey="shap" radius={[6, 6, 0, 0]}>
               {waterfallData.map((entry, i) => (
@@ -205,17 +182,8 @@ export function ExplainabilityPage() {
           </BarChart>
         </ResponsiveContainer>
 
-        <p className="mt-4 text-sm leading-relaxed text-theme-secondary">
-          Positive SHAP values (sky blue) increase the forecast above the base; negative values (coral) reduce it.
-          Rainfall, kharif season, and field app engagement are top drivers for herbicide demand in Punjab.
-        </p>
-
-        <button
-          type="button"
-          onClick={() => navigate('sku', { skuId, metricStep: 'sku' })}
-          className="btn-ghost mt-4"
-        >
-          View {skuId} deep dive
+        <button type="button" onClick={() => navigate('sku', { skuId })} className="btn-ghost mt-4">
+          View {skuId} in SKU Explorer
         </button>
       </ChartCard>
     </PageShell>
@@ -230,3 +198,6 @@ function ShapStat({ label, value, highlight }: { label: string; value: string; h
     </div>
   )
 }
+
+/** @deprecated Use DriversPage */
+export const ExplainabilityPage = DriversPage

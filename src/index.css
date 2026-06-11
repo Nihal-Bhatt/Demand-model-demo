@@ -363,6 +363,23 @@
     @apply overflow-hidden rounded-xl ring-1 ring-[color:var(--border-subtle)] p-4;
     background: var(--surface-muted);
   }
+
+  .jazzy-shimmer {
+    background: linear-gradient(
+      110deg,
+      transparent 25%,
+      rgba(0, 169, 244, 0.08) 45%,
+      rgba(245, 158, 11, 0.06) 55%,
+      transparent 75%
+    );
+    background-size: 200% 100%;
+    animation: shimmer 8s ease-in-out infinite;
+  }
+
+  @keyframes shimmer {
+    0%, 100% { background-position: 200% 0; }
+    50% { background-position: -200% 0; }
+  }
 }
 
 @keyframes float {

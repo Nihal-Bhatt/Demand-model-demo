@@ -1,32 +1,28 @@
 import {
   Activity,
   BarChart3,
+  BrainCircuit,
   ChevronLeft,
   ChevronRight,
   LayoutDashboard,
-  LineChart,
+  PackageSearch,
   PanelLeftClose,
   PanelLeftOpen,
   Settings,
   Sparkles,
-  Target,
   TrendingUp,
-  BrainCircuit,
-  PackageSearch,
 } from 'lucide-react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { NavSection } from '../data/mockData'
 import { BRAND } from '../data/mockData'
 import { cn } from '../lib/utils'
 
-const navItems: { id: NavSection; label: string; icon: typeof LayoutDashboard }[] = [
-  { id: 'overview', label: 'Overview', icon: LayoutDashboard },
-  { id: 'accuracy', label: 'Accuracy Trends', icon: LineChart },
-  { id: 'performance', label: 'Model Performance', icon: BarChart3 },
-  { id: 'forecast', label: 'Forecast Analysis', icon: Target },
-  { id: 'sku', label: 'SKU Deep Dive', icon: PackageSearch },
-  { id: 'explainability', label: 'Forecast Explainability', icon: BrainCircuit },
-  { id: 'pipeline', label: 'Pipeline Status', icon: Activity },
+const navItems: { id: NavSection; label: string; icon: typeof LayoutDashboard; desc: string }[] = [
+  { id: 'overview', label: 'Overview', icon: LayoutDashboard, desc: 'Summary & map' },
+  { id: 'metrics', label: 'Metrics', icon: BarChart3, desc: 'Trends & models' },
+  { id: 'sku', label: 'SKU Explorer', icon: PackageSearch, desc: 'Products & queue' },
+  { id: 'drivers', label: 'Drivers', icon: BrainCircuit, desc: 'SHAP & features' },
+  { id: 'pipeline', label: 'Pipeline', icon: Activity, desc: 'Engine status' },
 ]
 
 interface SidebarProps {
@@ -50,7 +46,6 @@ export function Sidebar({ active, collapsed, onNavigate, onToggleCollapse, mobil
       <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-mck-sky/50 to-transparent" />
 
       <div className="flex h-full w-full flex-col gradient-mck-glow shadow-[4px_0_48px_rgba(0,0,0,0.35)]">
-        {/* Brand */}
         <div className={cn('border-b border-white/10', collapsed && !mobile ? 'px-3 py-5' : 'px-5 py-6')}>
           <div className={cn('flex items-center', collapsed && !mobile ? 'justify-center' : 'gap-3')}>
             <motion.div
@@ -78,9 +73,8 @@ export function Sidebar({ active, collapsed, onNavigate, onToggleCollapse, mobil
           </div>
         </div>
 
-        {/* Nav */}
         <nav className={cn('flex-1 space-y-1 py-4', collapsed && !mobile ? 'px-2' : 'px-3')}>
-          {navItems.map(({ id, label, icon: Icon }) => (
+          {navItems.map(({ id, label, icon: Icon, desc }) => (
             <button
               key={id}
               type="button"
@@ -97,15 +91,17 @@ export function Sidebar({ active, collapsed, onNavigate, onToggleCollapse, mobil
               <Icon className={cn('h-4 w-4 shrink-0', active === id ? 'text-mck-sky' : 'group-hover:text-mck-sky/70')} />
               {(!collapsed || mobile) && (
                 <>
-                  <span className="truncate font-display">{label}</span>
-                  {active === id && <ChevronRight className="ml-auto h-4 w-4 text-mck-sky" />}
+                  <div className="min-w-0 flex-1 text-left">
+                    <span className="block truncate font-display">{label}</span>
+                    <span className="block truncate text-[10px] font-normal text-white/40">{desc}</span>
+                  </div>
+                  {active === id && <ChevronRight className="h-4 w-4 shrink-0 text-mck-sky" />}
                 </>
               )}
             </button>
           ))}
         </nav>
 
-        {/* Footer */}
         <div className={cn('border-t border-white/10 p-3', collapsed && !mobile && 'px-2')}>
           {(!collapsed || mobile) && (
             <div className="mb-3 rounded-xl bg-gradient-to-br from-mck-sky/10 to-mck-blue/10 p-4 ring-1 ring-mck-sky/20">
@@ -114,7 +110,7 @@ export function Sidebar({ active, collapsed, onNavigate, onToggleCollapse, mobil
                 Model v2.5 · Thunderbird
               </div>
               <p className="mt-2 font-body text-xs leading-relaxed text-white/50">
-                wMAPE-weighted selection · N+1/N+2/N+3
+                wMAPE-weighted · N+1/N+2/N+3
               </p>
               <div className="mt-3 flex gap-2">
                 <span className="rounded-md bg-mck-success/20 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-emerald-300">

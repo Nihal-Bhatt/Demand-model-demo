@@ -1,13 +1,4 @@
-export type NavSection =
-  | 'overview'
-  | 'accuracy'
-  | 'performance'
-  | 'forecast'
-  | 'sku'
-  | 'explainability'
-  | 'pipeline'
-
-export type MetricStep = 'accuracy' | 'bias' | 'horizon' | 'territory' | 'sku' | 'explainability'
+export type NavSection = 'overview' | 'metrics' | 'sku' | 'drivers' | 'pipeline'
 
 export type ProductCategory = 'Herbicide' | 'Fungicide' | 'Insecticide' | 'Seed Care' | 'Nutrition'
 
@@ -17,13 +8,17 @@ export const BRAND = {
   tagline: 'Demand Planning',
 } as const
 
-export const METRIC_FLOW: { id: MetricStep; label: string; hint: string }[] = [
-  { id: 'accuracy', label: 'Model Accuracy', hint: 'How close is the forecast?' },
-  { id: 'bias', label: 'Forecast Bias', hint: 'Over vs under-forecasting' },
-  { id: 'horizon', label: 'Horizon', hint: 'N+1 / N+2 / N+3 accuracy' },
-  { id: 'territory', label: 'Territory', hint: 'Regional performance' },
-  { id: 'sku', label: 'SKU Deep Dive', hint: 'Product-level detail' },
-  { id: 'explainability', label: 'Drivers', hint: 'Why the model predicts this' },
+export interface MapRegionMeta {
+  id: string
+  label: string
+  territories: string[]
+}
+
+export const indiaMapRegions: MapRegionMeta[] = [
+  { id: 'north', label: 'North', territories: ['Punjab North', 'Rajasthan'] },
+  { id: 'central', label: 'Central', territories: ['UP Central', 'MP Central'] },
+  { id: 'west', label: 'West', territories: ['Gujarat West', 'Maharashtra West'] },
+  { id: 'south', label: 'South', territories: ['Karnataka South', 'AP Coastal'] },
 ]
 
 export interface MonthlyMetric {

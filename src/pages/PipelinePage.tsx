@@ -1,20 +1,25 @@
 import { AgriPageHero, CropRowIcon, FarmerIcon } from '../components/agri/AgriIllustrations'
 import { ChartCard } from '../components/ChartCard'
-import { MetricFlowBar } from '../components/MetricFlowBar'
 import { PipelineStatus } from '../components/PipelineStatus'
-import { PageShell } from '../components/shared'
+import { PageHeader, PageShell } from '../components/shared'
+import { useDashboard } from '../context/DashboardContext'
 import { pipelineRuns, pipelineSteps } from '../data/mockData'
 import { cn } from '../lib/utils'
 
 export function PipelinePage() {
+  const { navigate } = useDashboard()
+
   return (
     <PageShell>
-      <MetricFlowBar compact />
+      <PageHeader
+        title="Pipeline Status"
+        subtitle="Thunderbird forecast engine · operational detail not shown on overview"
+      />
 
       <div className="relative">
         <AgriPageHero
           title="Thunderbird forecast pipeline"
-          subtitle="Weekly batch · preprocessing through post-processing for all territory × SKU combinations"
+          subtitle="Weekly batch · preprocessing through post-processing"
         />
         <div className="pointer-events-none absolute bottom-4 right-8 hidden opacity-25 lg:block">
           <FarmerIcon size={56} />
@@ -92,6 +97,10 @@ export function PipelinePage() {
           ))}
         </div>
       </ChartCard>
+
+      <button type="button" onClick={() => navigate('overview')} className="btn-ghost">
+        Back to overview
+      </button>
     </PageShell>
   )
 }
