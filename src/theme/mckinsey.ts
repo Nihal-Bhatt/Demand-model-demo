@@ -1,0 +1,29 @@
+export const mckColors = {
+  navy: '#051C2C',
+  navyMid: '#0E2E4A',
+  navyLight: '#1A3D5C',
+  blue: '#2251FF',
+  sky: '#00A9F4',
+  teal: '#6BAED6',
+  periwinkle: '#C5CAE9',
+  coral: '#E8776A',
+  peach: '#F5D5C8',
+  grey900: '#333333',
+  grey600: '#757575',
+  grey300: '#E0E0E0',
+  grey100: '#F5F7FA',
+  white: '#FFFFFF',
+  success: '#2E7D6F',
+  warning: '#D4A017',
+} as const
+
+export const chartColors = {
+  model: mckColors.sky,
+  modelFill: 'rgba(0, 169, 244, 0.15)',
+  rp: mckColors.coral,
+  rpFill: 'rgba(232, 119, 106, 0.15)',
+  modelLine: mckColors.blue,
+  improvement: mckColors.success,
+  neutral: mckColors.teal,
+  accent: mckColors.periwinkle,
+}
